@@ -1,0 +1,469 @@
+---
+import { QUESTIONS, LIKERT_OPTIONS } from '../data/questions';
+
+interface Props {
+  mode: 'quick' | 'comprehensive';
+}
+
+const { mode } = Astro.props;
+const testQuestions = mode === 'quick' ? QUESTIONS.filter((q) => q.isQuick) : QUESTIONS;
+const testTitle = mode === 'quick' ? 'Quick BDSM Assessment' : 'Comprehensive BDSM Assessment';
+const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
+---
+
+<section class="relative min-h-[calc(100vh-4rem)] py-8 md:py-14" data-test-mode={mode} data-questions={JSON.stringify(testQuestions)}>
+  <!-- Background Glow -->
+  <div class="pointer-events-none absolute inset-x-0 top-0 h-64 hero-mesh"></div>
+
+  <div class="relative mx-auto max-w-3xl px-4 sm:px-6">
+    <!-- Header Card -->
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-6">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-xs font-semibold uppercase tracking-wider text-mute">
+            {mode === 'quick' ? 'Quick Mode' : 'In-Depth Mode'}
+          </span>
+          <span class="text-border">•</span>
+          <span class="text-xs text-mute">{estimatedTime}</span>
+        </div>
+        <h1 class="text-2xl font-semibold tracking-[-0.8px] text-ink sm:text-3xl">
+          {testTitle}
+        </h1>
+      </div>
+
+      <!-- Controls: Auto-advance & Reset -->
+      <div class="flex items-center gap-3">
+        <label class="flex items-center gap-2 text-xs text-body cursor-pointer select-none">
+          <input
+            type="checkbox"
+            id="auto-advance-toggle"
+            checked
+            class="h-3.5 w-3.5 rounded border-border text-ink focus:ring-1 focus:ring-link bg-surface"
+          />
+          <span>Auto-advance</span>
+        </label>
+        <button
+          id="reset-test-btn"
+          type="button"
+          class="rounded-md border border-border bg-surface px-2.5 py-1 text-xs font-medium text-body hover:bg-surface-raised hover:text-ink transition-colors cursor-pointer"
+          title="Clear progress and start from question 1"
+        >
+          Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress Indicator Bar -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between text-xs font-medium text-body mb-2">
+        <span id="question-counter">Question 1 of {testQuestions.length}</span>
+        <span id="progress-percent" class="font-mono text-xs text-ink font-semibold">0% Completed</span>
+      </div>
+      <div class="h-2 w-full overflow-hidden rounded-full bg-surface-raised border border-border">
+        <div
+          id="progress-bar-fill"
+          class="h-full bg-ink transition-all duration-300 ease-out"
+          style="width: 0%;"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Active Question Card -->
+    <div
+      id="question-card"
+      class="rounded-2xl border border-border bg-surface p-6 md:p-10 shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-all"
+    >
+      <div class="mb-4 flex items-center justify-between">
+        <span
+          id="question-category"
+          class="inline-flex items-center rounded-full bg-surface-raised border border-border px-3 py-1 font-mono text-[11px] font-medium text-body"
+        >
+          Category
+        </span>
+        <span class="text-xs text-mute hidden sm:inline">Use keys 1–5 or click an option</span>
+      </div>
+
+      <!-- Question Text -->
+      <h2
+        id="question-text"
+        class="min-h-[72px] text-lg font-semibold leading-relaxed tracking-[-0.4px] text-ink sm:text-2xl sm:leading-snug"
+      >
+        Loading question...
+      </h2>
+
+      <!-- Likert Options -->
+      <div class="mt-8 space-y-3" id="options-container" role="radiogroup" aria-label="Likert Options">
+        {LIKERT_OPTIONS.map((opt, index) => (
+          <button
+            type="button"
+            data-value={opt.value}
+            data-index={index + 1}
+            class="likert-option group flex w-full items-center justify-between rounded-xl border border-border bg-surface p-4 text-left transition-all hover:border-ink hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-link cursor-pointer"
+          >
+            <div class="flex items-center gap-3.5">
+              <span class="flex h-6 w-6 items-center justify-center rounded-full border border-border font-mono text-xs font-medium text-mute group-hover:border-ink group-hover:text-ink">
+                {index + 1}
+              </span>
+              <div>
+                <div class="text-sm font-medium text-ink">
+                  {opt.label}
+                </div>
+                <div class="text-xs text-mute">
+                  {opt.hint}
+                </div>
+              </div>
+            </div>
+            <div class="radio-indicator flex h-5 w-5 items-center justify-center rounded-full border border-border transition-colors group-hover:border-ink">
+              <div class="radio-dot h-2.5 w-2.5 rounded-full bg-transparent transition-colors"></div>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <!-- Navigation & Action Buttons -->
+      <div class="mt-8 flex items-center justify-between border-t border-border pt-6">
+        <button
+          id="prev-btn"
+          type="button"
+          class="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2 text-xs font-medium text-ink hover:bg-surface-raised disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+        >
+          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Previous
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button
+            id="skip-btn"
+            type="button"
+            class="rounded-full px-3 py-2 text-xs font-medium text-mute hover:text-ink hover:bg-surface-raised transition-colors cursor-pointer"
+          >
+            Skip (Neutral)
+          </button>
+          <button
+            id="next-btn"
+            type="button"
+            class="inline-flex items-center gap-1.5 rounded-full bg-btn-primary px-5 py-2 text-xs font-medium text-btn-primary-text hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer shadow-xs"
+          >
+            <span>Next</span>
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          <button
+            id="finish-btn"
+            type="button"
+            class="hidden inline-flex items-center gap-2 rounded-full bg-btn-primary px-6 py-2.5 text-xs font-semibold text-btn-primary-text shadow-xs hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+          >
+            <span>View Detailed Results</span>
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Jump Drawer -->
+    <div class="mt-8 rounded-xl border border-border bg-surface p-4">
+      <div class="mb-3 flex items-center justify-between">
+        <span class="font-mono text-xs font-medium text-mute">Question Map</span>
+        <span id="answered-count" class="text-xs text-body">0 answered</span>
+      </div>
+      <div id="jump-grid" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1">
+        {testQuestions.map((_, i) => (
+          <button
+            type="button"
+            data-jump-index={i}
+            class="jump-dot flex h-7 w-7 items-center justify-center rounded-md border border-border bg-surface text-[11px] font-mono text-mute hover:border-ink hover:text-ink transition-all cursor-pointer"
+          >
+            {i + 1}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- Privacy & Anonymous guarantee -->
+    <div class="mt-8 flex items-center justify-center gap-2 text-xs text-mute">
+      <svg class="h-3.5 w-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+      </svg>
+      <span>Zero data leaves your browser. Processed entirely on your machine.</span>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { calculateScores, encodeScores } from '../utils/scoring';
+
+  interface QuestionData {
+    id: number;
+    text: string;
+    category: string;
+    isQuick: boolean;
+  }
+
+  const container = document.querySelector('[data-test-mode]') as HTMLElement;
+  if (container) {
+    const mode = container.dataset.testMode as 'quick' | 'comprehensive';
+    const rawQuestions = container.dataset.questions;
+    const questions: QuestionData[] = rawQuestions ? JSON.parse(rawQuestions) : [];
+
+    const storageKey = `bdsm_test_answers_${mode}`;
+    const autoAdvanceKey = 'bdsm_test_auto_advance';
+
+    // State
+    let currentIndex = 0;
+    let answers: Record<number, number> = {};
+    let autoAdvance = localStorage.getItem(autoAdvanceKey) !== 'false';
+
+    // Load saved answers
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        answers = JSON.parse(saved);
+      }
+    } catch (e) {
+      answers = {};
+    }
+
+    // Elements
+    const qCounter = document.getElementById('question-counter');
+    const qCategory = document.getElementById('question-category');
+    const qText = document.getElementById('question-text');
+    const progressBarFill = document.getElementById('progress-bar-fill');
+    const progressPercent = document.getElementById('progress-percent');
+    const answeredCount = document.getElementById('answered-count');
+    const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
+    const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+    const finishBtn = document.getElementById('finish-btn') as HTMLButtonElement;
+    const skipBtn = document.getElementById('skip-btn') as HTMLButtonElement;
+    const resetBtn = document.getElementById('reset-test-btn') as HTMLButtonElement;
+    const autoAdvanceToggle = document.getElementById('auto-advance-toggle') as HTMLInputElement;
+    const options = document.querySelectorAll('.likert-option');
+    const jumpDots = document.querySelectorAll('.jump-dot');
+
+    if (autoAdvanceToggle) {
+      autoAdvanceToggle.checked = autoAdvance;
+      autoAdvanceToggle.addEventListener('change', () => {
+        autoAdvance = autoAdvanceToggle.checked;
+        localStorage.setItem(autoAdvanceKey, String(autoAdvance));
+      });
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(answers));
+      } catch (e) {}
+    }
+
+    function renderQuestion() {
+      const q = questions[currentIndex];
+      if (!q) return;
+
+      if (qCounter) qCounter.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+      if (qCategory) qCategory.textContent = q.category;
+      if (qText) qText.textContent = q.text;
+
+      // Update progress
+      const answeredTotal = Object.keys(answers).length;
+      const pct = Math.round((answeredTotal / questions.length) * 100);
+      if (progressBarFill) progressBarFill.style.width = `${pct}%`;
+      if (progressPercent) progressPercent.textContent = `${pct}% Completed`;
+      if (answeredCount) answeredCount.textContent = `${answeredTotal} of ${questions.length} answered`;
+
+      // Update active option styling
+      const currentAns = answers[q.id];
+      options.forEach((opt) => {
+        const val = Number(opt.getAttribute('data-value'));
+        const indicatorDot = opt.querySelector('.radio-dot');
+        const indicator = opt.querySelector('.radio-indicator');
+
+        if (currentAns !== undefined && currentAns === val) {
+          opt.classList.add('border-ink', 'bg-surface-raised');
+          opt.classList.remove('border-border');
+          if (indicatorDot) indicatorDot.classList.add('bg-ink');
+          if (indicator) indicator.classList.add('border-ink');
+        } else {
+          opt.classList.remove('border-ink', 'bg-surface-raised');
+          opt.classList.add('border-border');
+          if (indicatorDot) indicatorDot.classList.remove('bg-ink');
+          if (indicator) indicator.classList.remove('border-ink');
+        }
+      });
+
+      // Update jump dots
+      jumpDots.forEach((dot, idx) => {
+        const dotQ = questions[idx];
+        const isAnswered = dotQ && answers[dotQ.id] !== undefined;
+        const isCurrent = idx === currentIndex;
+
+        dot.classList.remove('bg-btn-primary', 'text-btn-primary-text', 'border-btn-primary', 'ring-1', 'ring-ink', 'border-ink');
+        dot.classList.add('border-border', 'text-mute');
+
+        if (isCurrent) {
+          dot.classList.add('border-ink', 'ring-1', 'ring-ink');
+        }
+
+        if (isAnswered) {
+          dot.classList.remove('text-mute', 'border-border');
+          dot.classList.add('bg-btn-primary', 'text-btn-primary-text', 'border-btn-primary');
+        }
+      });
+
+      // Previous button state
+      if (prevBtn) {
+        prevBtn.disabled = currentIndex === 0;
+      }
+
+      // Last question check
+      const isLast = currentIndex === questions.length - 1;
+      const allAnswered = Object.keys(answers).length >= questions.length;
+
+      if (isLast || allAnswered) {
+        if (finishBtn) finishBtn.classList.remove('hidden');
+        if (nextBtn && isLast) nextBtn.classList.add('hidden');
+      } else {
+        if (finishBtn) finishBtn.classList.add('hidden');
+        if (nextBtn) nextBtn.classList.remove('hidden');
+      }
+    }
+
+    function selectOption(val: number) {
+      const q = questions[currentIndex];
+      if (!q) return;
+
+      answers[q.id] = val;
+      saveState();
+      renderQuestion();
+
+      if (autoAdvance) {
+        setTimeout(() => {
+          if (currentIndex < questions.length - 1) {
+            currentIndex++;
+            renderQuestion();
+          } else {
+            // Last question answered
+            completeTest();
+          }
+        }, 220);
+      }
+    }
+
+    function completeTest() {
+      // Calculate scores client-side
+      const scores = calculateScores(answers, questions as any);
+      const encoded = encodeScores(scores);
+      // Save latest completion
+      localStorage.setItem('bdsm_latest_results', JSON.stringify({ mode, scores, date: new Date().toISOString() }));
+      // Redirect to results
+      window.location.href = `/results?data=${encoded}&mode=${mode}`;
+    }
+
+    // Attach option clicks
+    options.forEach((opt) => {
+      opt.addEventListener('click', () => {
+        const val = Number(opt.getAttribute('data-value'));
+        selectOption(val);
+      });
+    });
+
+    // Attach prev / next / skip
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+          currentIndex--;
+          renderQuestion();
+        }
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        if (currentIndex < questions.length - 1) {
+          currentIndex++;
+          renderQuestion();
+        }
+      });
+    }
+
+    if (skipBtn) {
+      skipBtn.addEventListener('click', () => {
+        const q = questions[currentIndex];
+        if (q && answers[q.id] === undefined) {
+          answers[q.id] = 50; // Neutral default
+          saveState();
+        }
+        if (currentIndex < questions.length - 1) {
+          currentIndex++;
+          renderQuestion();
+        } else {
+          completeTest();
+        }
+      });
+    }
+
+    if (finishBtn) {
+      finishBtn.addEventListener('click', () => {
+        completeTest();
+      });
+    }
+
+    // Attach jump dots
+    jumpDots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+        const jumpIdx = Number(dot.getAttribute('data-jump-index'));
+        if (!isNaN(jumpIdx) && jumpIdx >= 0 && jumpIdx < questions.length) {
+          currentIndex = jumpIdx;
+          renderQuestion();
+        }
+      });
+    });
+
+    // Reset button
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to reset your answers and start over?')) {
+          answers = {};
+          currentIndex = 0;
+          localStorage.removeItem(storageKey);
+          renderQuestion();
+        }
+      });
+    }
+
+    // Keyboard shortcuts (1-5, left/right arrows, enter)
+    window.addEventListener('keydown', (e) => {
+      if (['1', '2', '3', '4', '5'].includes(e.key)) {
+        const keyIndex = Number(e.key) - 1;
+        const targetOption = options[keyIndex];
+        if (targetOption) {
+          const val = Number(targetOption.getAttribute('data-value'));
+          selectOption(val);
+        }
+      } else if (e.key === 'ArrowLeft') {
+        if (currentIndex > 0) {
+          currentIndex--;
+          renderQuestion();
+        }
+      } else if (e.key === 'ArrowRight') {
+        if (currentIndex < questions.length - 1) {
+          currentIndex++;
+          renderQuestion();
+        }
+      }
+    });
+
+    // Find first unanswered question on start
+    for (let i = 0; i < questions.length; i++) {
+      if (answers[questions[i].id] === undefined) {
+        currentIndex = i;
+        break;
+      }
+    }
+
+    // Initial render
+    renderQuestion();
+  }
+</script>

@@ -1,0 +1,443 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { DIMENSIONS } from '../data/dimensions';
+---
+
+<Layout
+  title="Partner BDSM Test Comparison — Sync Results & Compatibility"
+  description="Compare two BDSM test results anonymously and side-by-side to discover complementary desires, mutual kink synergy, and relationship communication points."
+  canonicalPath="/compare"
+>
+  <Header activePath="/compare" />
+
+  <main class="flex-1 py-10 md:py-16" id="compare-page" data-dimensions={JSON.stringify(DIMENSIONS)}>
+    <div class="pointer-events-none absolute inset-x-0 top-16 h-80 hero-mesh"></div>
+
+    <div class="relative mx-auto max-w-5xl px-4 sm:px-6">
+      <!-- Header -->
+      <div class="mb-10 text-center">
+        <span class="rounded-full border border-border bg-surface px-3 py-1 font-mono text-xs uppercase tracking-wider text-mute shadow-xs">
+          Dynamic Sync Engine
+        </span>
+        <h1 class="mt-3 text-3xl sm:text-4xl font-semibold tracking-[-1.2px] text-ink">
+          Partner Dynamics Comparison
+        </h1>
+        <p class="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-body">
+          Compare two profiles anonymously to discover complementary dynamics, mutual excitement, and areas where proactive communication will help create safe, thrilling experiences.
+        </p>
+      </div>
+
+      <!-- Sync Setup Card -->
+      <div class="mb-12 rounded-2xl border border-border bg-surface p-6 md:p-8 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Profile A (You) -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label for="profile-a-input" class="text-xs font-semibold uppercase tracking-wider text-ink">
+                Your Result Code or URL
+              </label>
+              <button
+                id="load-my-saved-btn"
+                type="button"
+                class="text-[11px] text-link hover:underline cursor-pointer"
+              >
+                Load My Latest Test
+              </button>
+            </div>
+            <textarea
+              id="profile-a-input"
+              rows="3"
+              placeholder="Paste your test link or results code here..."
+              class="w-full rounded-xl border border-border bg-surface-raised p-3 text-xs font-mono text-ink placeholder:text-mute focus:border-ink focus:bg-surface focus:outline-none transition-colors"
+            ></textarea>
+            <div id="profile-a-status" class="text-[11px] text-mute">No profile loaded</div>
+          </div>
+
+          <!-- Profile B (Partner) -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label for="profile-b-input" class="text-xs font-semibold uppercase tracking-wider text-ink">
+                Partner's Result Code or URL
+              </label>
+              <a href="/test/quick" target="_blank" class="text-[11px] text-link hover:underline">
+                Send Partner Test Link ↗
+              </a>
+            </div>
+            <textarea
+              id="profile-b-input"
+              rows="3"
+              placeholder="Paste your partner's test link or results code here..."
+              class="w-full rounded-xl border border-border bg-surface-raised p-3 text-xs font-mono text-ink placeholder:text-mute focus:border-ink focus:bg-surface focus:outline-none transition-colors"
+            ></textarea>
+            <div id="profile-b-status" class="text-[11px] text-mute">No profile loaded</div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-center border-t border-border pt-6">
+          <button
+            id="compare-calculate-btn"
+            type="button"
+            class="inline-flex items-center gap-2 rounded-full bg-btn-primary px-6 py-2.5 text-xs font-semibold text-btn-primary-text shadow-xs hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+          >
+            Calculate Compatibility
+          </button>
+        </div>
+      </div>
+
+      <!-- Results View Container (Initially Hidden until calculated) -->
+      <div id="comparison-results" class="hidden space-y-10">
+        <!-- Overall Synergy Hero -->
+        <div class="rounded-2xl border border-border bg-surface p-6 md:p-10 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div class="space-y-2">
+              <span class="rounded bg-link px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-white">
+                Synergy Matrix
+              </span>
+              <h2 class="text-2xl sm:text-3xl font-semibold tracking-[-0.8px] text-ink">
+                Complementary Chemistry Overview
+              </h2>
+              <p class="max-w-xl text-xs leading-relaxed text-body">
+                This score reflects reciprocal balance—how well one partner's desires match and reward the other partner's passions across power exchange, sensation, and psychological roles.
+              </p>
+            </div>
+
+            <div class="flex flex-col items-center justify-center rounded-2xl border border-border bg-surface-raised px-8 py-5 text-center min-w-[200px]">
+              <span class="font-mono text-xs uppercase tracking-wider text-mute">Dynamic Synergy</span>
+              <span id="synergy-pct" class="mt-1 text-3xl font-bold tracking-tight text-ink">-</span>
+              <span id="synergy-label" class="mt-1 text-xs font-semibold text-link">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Strong Complementary Synergies Grid -->
+        <div>
+          <div class="mb-4">
+            <h3 class="font-mono text-xs font-semibold uppercase tracking-wider text-mute">
+              High Alignment Matches
+            </h3>
+            <p class="text-lg font-semibold tracking-[-0.4px] text-ink">
+              Where Your Desires Interlock Naturally
+            </p>
+          </div>
+
+          <div id="matches-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- Areas for Boundary Negotiation -->
+        <div id="frictions-section" class="hidden">
+          <div class="mb-4">
+            <h3 class="font-mono text-xs font-semibold uppercase tracking-wider text-error">
+              Discussion & Boundary Points
+            </h3>
+            <p class="text-lg font-semibold tracking-[-0.4px] text-ink">
+              Asymmetrical Desires & Negotiation Recommended
+            </p>
+          </div>
+
+          <div id="frictions-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- Side-by-Side Detailed Comparison Table -->
+        <div class="overflow-hidden rounded-2xl border border-border bg-surface shadow-xs">
+          <div class="border-b border-border bg-surface-raised p-4 sm:px-6">
+            <h3 class="text-sm font-semibold text-ink">All Dimensions Side-by-Side</h3>
+            <p class="text-xs text-mute">Direct comparison of both scorecards across every dynamic</p>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="border-b border-border bg-surface-raised font-mono text-[11px] uppercase tracking-wider text-mute">
+                <tr>
+                  <th class="py-3 px-4 sm:px-6">Dimension</th>
+                  <th class="py-3 px-4 text-center">Your Score</th>
+                  <th class="py-3 px-4 text-center">Partner Score</th>
+                  <th class="py-3 px-4 text-right sm:pr-6">Overlap</th>
+                </tr>
+              </thead>
+              <tbody id="side-by-side-rows" class="divide-y divide-border">
+                <!-- Rows injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  import { decodeScores, calculatePartnerCompatibility } from '../utils/scoring';
+  import { DIMENSIONS, type Dimension } from '../data/dimensions';
+
+  const container = document.getElementById('compare-page');
+  if (container) {
+    const rawDims = container.dataset.dimensions;
+    const allDimensions: Record<string, Dimension> = rawDims ? JSON.parse(rawDims) : DIMENSIONS;
+
+    const inputA = document.getElementById('profile-a-input') as HTMLTextAreaElement;
+    const inputB = document.getElementById('profile-b-input') as HTMLTextAreaElement;
+    const statusA = document.getElementById('profile-a-status');
+    const statusB = document.getElementById('profile-b-status');
+    const calcBtn = document.getElementById('compare-calculate-btn');
+    const loadSavedBtn = document.getElementById('load-my-saved-btn');
+    const resultsContainer = document.getElementById('comparison-results');
+
+    // Parse URL query parameters if passed: ?u=...&p=...
+    const urlParams = new URLSearchParams(window.location.search);
+    const uParam = urlParams.get('u');
+    const pParam = urlParams.get('p');
+
+    if (uParam && inputA) {
+      inputA.value = uParam;
+      validateInput(inputA, statusA, 'You');
+    } else {
+      // Auto-load from local storage if available
+      try {
+        const saved = localStorage.getItem('bdsm_latest_results');
+        if (saved && inputA) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.scores) {
+            import('../utils/scoring').then(({ encodeScores }) => {
+              inputA.value = encodeScores(parsed.scores);
+              validateInput(inputA, statusA, 'You');
+            });
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (pParam && inputB) {
+      inputB.value = pParam;
+      validateInput(inputB, statusB, 'Partner');
+    }
+
+    if (loadSavedBtn && inputA) {
+      loadSavedBtn.addEventListener('click', () => {
+        try {
+          const saved = localStorage.getItem('bdsm_latest_results');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed && parsed.scores) {
+              import('../utils/scoring').then(({ encodeScores }) => {
+                inputA.value = encodeScores(parsed.scores);
+                validateInput(inputA, statusA, 'You');
+              });
+            }
+          } else {
+            alert('No saved test results found in this browser. Please take a test first.');
+          }
+        } catch (e) {}
+      });
+    }
+
+    function extractCode(val: string): string {
+      const trimmed = val.trim();
+      if (trimmed.includes('data=')) {
+        try {
+          const parsed = new URL(trimmed);
+          return parsed.searchParams.get('data') || '';
+        } catch (e) {
+          const match = trimmed.match(/data=([^&]+)/);
+          return match ? match[1] : trimmed;
+        }
+      }
+      return trimmed;
+    }
+
+    function validateInput(el: HTMLTextAreaElement, statusEl: HTMLElement | null, label: string): Record<string, number> | null {
+      const code = extractCode(el.value);
+      if (!code) {
+        if (statusEl) {
+          statusEl.textContent = 'No input entered';
+          statusEl.className = 'text-[11px] text-mute';
+        }
+        return null;
+      }
+
+      const scores = decodeScores(code);
+      if (scores && Object.keys(scores).length > 0) {
+        if (statusEl) {
+          statusEl.textContent = `✓ ${label}'s profile verified successfully`;
+          statusEl.className = 'text-[11px] text-emerald-500 font-medium';
+        }
+        return scores;
+      } else {
+        if (statusEl) {
+          statusEl.textContent = '✗ Invalid profile code or link format';
+          statusEl.className = 'text-[11px] text-error font-medium';
+        }
+        return null;
+      }
+    }
+
+    if (inputA) inputA.addEventListener('input', () => validateInput(inputA, statusA, 'You'));
+    if (inputB) inputB.addEventListener('input', () => validateInput(inputB, statusB, 'Partner'));
+
+    if (calcBtn) {
+      calcBtn.addEventListener('click', () => {
+        const scoresA = validateInput(inputA, statusA, 'You');
+        const scoresB = validateInput(inputB, statusB, 'Partner');
+
+        if (!scoresA) {
+          alert('Please enter or load your test result code.');
+          return;
+        }
+        if (!scoresB) {
+          alert("Please enter your partner's test result code.");
+          return;
+        }
+
+        runComparison(scoresA, scoresB);
+      });
+    }
+
+    // Auto calculate if both params exist
+    if (uParam && pParam) {
+      setTimeout(() => {
+        const scoresA = validateInput(inputA, statusA, 'You');
+        const scoresB = validateInput(inputB, statusB, 'Partner');
+        if (scoresA && scoresB) {
+          runComparison(scoresA, scoresB);
+        }
+      }, 100);
+    }
+
+    function runComparison(scoresA: Record<string, number>, scoresB: Record<string, number>) {
+      const comp = calculatePartnerCompatibility(scoresA, scoresB);
+
+      if (resultsContainer) resultsContainer.classList.remove('hidden');
+
+      // Synergy Overview
+      const synergyPct = document.getElementById('synergy-pct');
+      const synergyLabel = document.getElementById('synergy-label');
+      if (synergyPct) synergyPct.textContent = `${comp.overallSynergy}%`;
+      if (synergyLabel) {
+        if (comp.overallSynergy >= 75) {
+          synergyLabel.textContent = 'High Mutual Synergy';
+          synergyLabel.className = 'mt-1 text-xs font-semibold text-emerald-500';
+        } else if (comp.overallSynergy >= 50) {
+          synergyLabel.textContent = 'Moderate Compatibility';
+          synergyLabel.className = 'mt-1 text-xs font-semibold text-link';
+        } else {
+          synergyLabel.textContent = 'Exploratory Divergence';
+          synergyLabel.className = 'mt-1 text-xs font-semibold text-warning';
+        }
+      }
+
+      // Render Matches Grid
+      const matchesGrid = document.getElementById('matches-grid');
+      if (matchesGrid) {
+        if (comp.matches.length > 0) {
+          matchesGrid.innerHTML = comp.matches.map((m) => `
+            <div class="rounded-xl border border-border bg-surface p-5 shadow-xs">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-semibold text-sm text-ink">${m.name}</span>
+                <span class="rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2.5 py-0.5 font-mono text-xs font-semibold">
+                  ${m.synergyScore}% Match
+                </span>
+              </div>
+              <div class="my-3 flex items-center justify-between text-xs bg-surface-raised p-2.5 rounded-lg border border-border">
+                <div>
+                  <span class="text-mute">You:</span>
+                  <span class="font-medium text-ink ml-1">${m.userDimension} (${m.userScore}%)</span>
+                </div>
+                <div class="text-mute">⇄</div>
+                <div>
+                  <span class="text-mute">Partner:</span>
+                  <span class="font-medium text-ink ml-1">${m.partnerDimension} (${m.partnerScore}%)</span>
+                </div>
+              </div>
+              <p class="text-xs leading-relaxed text-body">${m.insight}</p>
+            </div>
+          `).join('');
+        } else {
+          matchesGrid.innerHTML = `<p class="col-span-2 text-xs text-mute">No high-intensity complementary matches detected. This dynamic may focus on shared exploratory or conventional intimacy.</p>`;
+        }
+      }
+
+      // Render Frictions Grid
+      const frictionsSection = document.getElementById('frictions-section');
+      const frictionsGrid = document.getElementById('frictions-grid');
+      if (frictionsSection && frictionsGrid) {
+        if (comp.potentialFrictions.length > 0) {
+          frictionsSection.classList.remove('hidden');
+          frictionsGrid.innerHTML = comp.potentialFrictions.map((f) => `
+            <div class="rounded-xl border border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20 p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-semibold text-sm text-ink">${f.name}</span>
+                <span class="rounded-full bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-200 border border-rose-200 dark:border-rose-800 px-2.5 py-0.5 font-mono text-xs font-semibold">
+                  Asymmetry
+                </span>
+              </div>
+              <div class="my-3 flex items-center justify-between text-xs bg-surface p-2.5 rounded-lg border border-rose-200 dark:border-rose-900/40">
+                <div>
+                  <span class="text-mute">You:</span>
+                  <span class="font-medium text-ink ml-1">${f.userDimension} (${f.userScore}%)</span>
+                </div>
+                <div class="text-mute">≠</div>
+                <div>
+                  <span class="text-mute">Partner:</span>
+                  <span class="font-medium text-ink ml-1">${f.partnerDimension} (${f.partnerScore}%)</span>
+                </div>
+              </div>
+              <p class="text-xs leading-relaxed text-body">${f.insight}</p>
+            </div>
+          `).join('');
+        } else {
+          frictionsSection.classList.add('hidden');
+        }
+      }
+
+      // Side-by-Side Detailed Rows
+      const rowsContainer = document.getElementById('side-by-side-rows');
+      if (rowsContainer) {
+        rowsContainer.innerHTML = Object.keys(allDimensions).map((dimId) => {
+          const dim = allDimensions[dimId];
+          const a = scoresA[dimId] || 0;
+          const b = scoresB[dimId] || 0;
+          const diff = Math.abs(a - b);
+
+          let overlapTag = '<span class="text-mute">Moderate</span>';
+          if (diff <= 15) {
+            overlapTag = '<span class="text-emerald-500 font-medium">Closely Aligned</span>';
+          } else if (diff >= 45) {
+            overlapTag = '<span class="text-warning font-medium">Notable Divergence</span>';
+          }
+
+          return `
+            <tr class="hover:bg-surface-raised transition-colors">
+              <td class="py-3 px-4 sm:px-6">
+                <div class="font-medium text-ink">${dim.name}</div>
+                <div class="text-[10px] text-mute">${dim.category}</div>
+              </td>
+              <td class="py-3 px-4 text-center">
+                <span class="rounded-full bg-surface-raised border border-border px-2.5 py-0.5 font-mono font-medium text-ink">
+                  ${a}%
+                </span>
+              </td>
+              <td class="py-3 px-4 text-center">
+                <span class="rounded-full bg-surface-raised border border-border px-2.5 py-0.5 font-mono font-medium text-link">
+                  ${b}%
+                </span>
+              </td>
+              <td class="py-3 px-4 text-right sm:pr-6">
+                ${overlapTag}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Scroll smoothly to results
+      resultsContainer?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+</script>

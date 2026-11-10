@@ -1,0 +1,479 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { DIMENSIONS, DIMENSION_CATEGORIES } from '../data/dimensions';
+---
+
+<Layout
+  title="BDSM Test Results — Your Kink Dynamics Profile & Analysis"
+  description="Explore your comprehensive BDSM test results, archetype breakdown, power balance, and practical partner communication guidelines."
+  canonicalPath="/results"
+>
+  <Header />
+
+  <main class="flex-1 py-10 md:py-16" id="results-page" data-dimensions={JSON.stringify(DIMENSIONS)}>
+    <!-- Hero Mesh Gradient -->
+    <div class="pointer-events-none absolute inset-x-0 top-16 h-80 hero-mesh"></div>
+
+    <div class="relative mx-auto max-w-5xl px-4 sm:px-6">
+      <!-- Loading State -->
+      <div id="results-loading" class="py-20 text-center">
+        <div class="inline-block h-8 w-8 animate-spin rounded-full border-2 border-ink border-t-transparent"></div>
+        <p class="mt-4 font-mono text-xs uppercase tracking-wider text-mute">Calculating your dynamic profile...</p>
+      </div>
+
+      <!-- No Data / Fallback State -->
+      <div id="results-empty" class="hidden py-16 text-center">
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-surface-raised border border-border text-ink">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <h2 class="mt-4 text-2xl font-semibold tracking-[-0.8px] text-ink">No Test Results Found</h2>
+        <p class="mx-auto mt-2 max-w-md text-sm text-body">
+          You haven't completed an assessment yet, or your link is missing result parameters. Take our assessment to generate your personalized profile.
+        </p>
+        <div class="mt-6 flex flex-wrap justify-center gap-3">
+          <a
+            href="/test/quick"
+            class="rounded-full bg-btn-primary px-5 py-2.5 text-xs font-semibold text-btn-primary-text hover:opacity-90 transition-colors shadow-xs"
+          >
+            Start Quick Test (3 min)
+          </a>
+          <a
+            href="/test/comprehensive"
+            class="rounded-full border border-border bg-surface px-5 py-2.5 text-xs font-semibold text-ink hover:bg-surface-raised transition-colors"
+          >
+            Start Comprehensive Test (10 min)
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Results Container -->
+      <div id="results-content" class="hidden space-y-12">
+        <!-- 1. Top Executive Profile Card -->
+        <div class="overflow-hidden rounded-2xl border border-border bg-surface p-6 md:p-10 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b border-border pb-8">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="rounded bg-btn-primary px-2 py-0.5 font-mono text-[10px] font-medium uppercase text-btn-primary-text">
+                  Dynamics Assessment Profile
+                </span>
+                <span id="test-mode-badge" class="rounded border border-border bg-surface-raised px-2 py-0.5 font-mono text-[10px] text-body">
+                  Quick Mode
+                </span>
+              </div>
+              <h1 id="summary-title" class="text-3xl sm:text-4xl font-semibold tracking-[-1.5px] text-ink">
+                Sensual Dominant Switch
+              </h1>
+              <p id="profile-overview" class="max-w-2xl text-sm leading-relaxed text-body">
+                Loading overview analysis...
+              </p>
+            </div>
+
+            <!-- Primary Metric Pill -->
+            <div class="flex flex-col items-center justify-center rounded-2xl border border-border bg-surface-raised px-8 py-5 text-center min-w-[180px]">
+              <span class="font-mono text-xs uppercase tracking-wider text-mute">Primary Role</span>
+              <span id="primary-name" class="mt-1 text-2xl font-bold tracking-tight text-ink">-</span>
+              <span id="primary-score-badge" class="mt-1 text-sm font-semibold text-link">-</span>
+            </div>
+          </div>
+
+          <!-- Power Spectrum Triad Bar -->
+          <div class="mt-8">
+            <div class="mb-3 flex items-center justify-between text-xs">
+              <span class="font-mono uppercase tracking-wider text-mute">Power Exchange Balance</span>
+              <span class="text-body">Leadership vs Surrender</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="rounded-xl border border-border p-3.5 bg-surface-raised">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <span class="font-medium text-ink">Dominant</span>
+                  <span id="spectrum-dom-pct" class="font-mono font-semibold text-ink">0%</span>
+                </div>
+                <div class="h-1.5 w-full rounded-full bg-border overflow-hidden">
+                  <div id="spectrum-dom-bar" class="h-full bg-ink transition-all duration-500" style="width: 0%;"></div>
+                </div>
+              </div>
+
+              <div class="rounded-xl border border-border p-3.5 bg-surface-raised">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <span class="font-medium text-ink">Submissive</span>
+                  <span id="spectrum-sub-pct" class="font-mono font-semibold text-link">0%</span>
+                </div>
+                <div class="h-1.5 w-full rounded-full bg-border overflow-hidden">
+                  <div id="spectrum-sub-bar" class="h-full bg-link transition-all duration-500" style="width: 0%;"></div>
+                </div>
+              </div>
+
+              <div class="rounded-xl border border-border p-3.5 bg-surface-raised">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <span class="font-medium text-ink">Switch Synergy</span>
+                  <span id="spectrum-swi-pct" class="font-mono font-semibold text-[#7928ca] dark:text-[#a855f7]">0%</span>
+                </div>
+                <div class="h-1.5 w-full rounded-full bg-border overflow-hidden">
+                  <div id="spectrum-swi-bar" class="h-full bg-[#7928ca] dark:bg-[#a855f7] transition-all duration-500" style="width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions Row -->
+          <div class="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                id="share-btn"
+                type="button"
+                class="inline-flex items-center gap-1.5 rounded-full bg-btn-primary px-4 py-2 text-xs font-medium text-btn-primary-text hover:opacity-90 transition-colors cursor-pointer shadow-xs"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Copy Shareable Link
+              </button>
+
+              <button
+                id="print-btn"
+                type="button"
+                class="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2 text-xs font-medium text-ink hover:bg-surface-raised transition-colors cursor-pointer"
+              >
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Print / Save PDF
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <a
+                id="compare-link"
+                href="/compare"
+                class="inline-flex items-center gap-1.5 rounded-full border border-link bg-link/10 px-4 py-2 text-xs font-medium text-link hover:bg-link/20 transition-colors"
+              >
+                <span>Compare with Partner</span>
+                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+              <a
+                href="/test/quick"
+                class="rounded-full px-3 py-2 text-xs font-medium text-mute hover:text-ink transition-colors"
+              >
+                Retake Test
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Core Pillars (Top Scoring Archetypes) -->
+        <div>
+          <div class="mb-4">
+            <h2 class="font-mono text-xs font-semibold uppercase tracking-wider text-mute">
+              Primary Desires & Traits
+            </h2>
+            <p class="text-lg font-semibold tracking-[-0.4px] text-ink">
+              Your Highest-Scoring Dimensions
+            </p>
+          </div>
+
+          <div id="top-archetypes-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Dynamically injected top 3 cards -->
+          </div>
+        </div>
+
+        <!-- 3. Complete 20 Dimensions Breakdown -->
+        <div>
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+              <h2 class="font-mono text-xs font-semibold uppercase tracking-wider text-mute">
+                Full Spectrum Analysis
+              </h2>
+              <p class="text-lg font-semibold tracking-[-0.4px] text-ink">
+                All 20 Measured Dimensions
+              </p>
+            </div>
+
+            <!-- Category Filter Pills -->
+            <div class="flex flex-wrap items-center gap-1.5" id="category-filter-group">
+              {DIMENSION_CATEGORIES.map((cat, idx) => (
+                <button
+                  type="button"
+                  data-cat={cat}
+                  class:list={[
+                    'filter-pill rounded-full px-3 py-1 text-xs font-medium transition-all cursor-pointer border',
+                    idx === 0
+                      ? 'bg-btn-primary text-btn-primary-text border-btn-primary'
+                      : 'bg-surface text-body border-border hover:border-ink hover:text-ink'
+                  ]}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <!-- Dimensions Interactive List -->
+          <div id="all-dimensions-list" class="space-y-3">
+            <!-- Dynamically rendered dimension cards -->
+          </div>
+        </div>
+
+        <!-- 4. Kink Communication & Safety Guidelines -->
+        <div class="rounded-2xl border border-border bg-surface p-6 md:p-8 shadow-xs">
+          <h3 class="text-base font-semibold tracking-[-0.4px] text-ink">
+            How to Use These Results Ethically
+          </h3>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-body">
+            <div class="space-y-2">
+              <div class="font-semibold text-ink">1. Continuous Informed Consent</div>
+              <p class="leading-relaxed">
+                A high score on a dimension indicates an interest or curiosity, never an obligation. Consent must always be ongoing, enthusiastic, and revocable at any second.
+              </p>
+            </div>
+            <div class="space-y-2">
+              <div class="font-semibold text-ink">2. Establish Safewords</div>
+              <p class="leading-relaxed">
+                Before engaging in intense play, establish unambiguous safewords (like Red / Yellow / Green). Practice speaking them freely without guilt or hesitation.
+              </p>
+            </div>
+            <div class="space-y-2">
+              <div class="font-semibold text-ink">3. Intentional Aftercare</div>
+              <p class="leading-relaxed">
+                High-intensity play releases massive dopamine and endorphins. Plan aftercare—cuddles, warm blankets, hydration, and gentle check-ins to prevent drop.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  import { decodeScores, analyzeResults, type DimensionScore } from '../utils/scoring';
+
+  const container = document.getElementById('results-page');
+  const loadingEl = document.getElementById('results-loading');
+  const emptyEl = document.getElementById('results-empty');
+  const contentEl = document.getElementById('results-content');
+
+  if (container) {
+    // Read URL param or localStorage
+    const params = new URLSearchParams(window.location.search);
+    let encodedData = params.get('data') || '';
+    const testMode = params.get('mode') || 'comprehensive';
+
+    if (!encodedData) {
+      try {
+        const saved = localStorage.getItem('bdsm_latest_results');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.scores) {
+            import('../utils/scoring').then(({ encodeScores }) => {
+              encodedData = encodeScores(parsed.scores);
+              runAnalysis(parsed.scores, parsed.mode || 'quick', encodedData);
+            });
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (encodedData) {
+      const scores = decodeScores(encodedData);
+      if (scores && Object.keys(scores).length > 0) {
+        runAnalysis(scores, testMode, encodedData);
+      } else {
+        showEmpty();
+      }
+    } else {
+      showEmpty();
+    }
+
+    function showEmpty() {
+      if (loadingEl) loadingEl.classList.add('hidden');
+      if (emptyEl) emptyEl.classList.remove('hidden');
+    }
+
+    function runAnalysis(scores: Record<string, number>, mode: string, encodedString: string) {
+      const analysis = analyzeResults(scores);
+
+      if (loadingEl) loadingEl.classList.add('hidden');
+      if (contentEl) contentEl.classList.remove('hidden');
+
+      // Populate Executive card
+      const summaryTitle = document.getElementById('summary-title');
+      const profileOverview = document.getElementById('profile-overview');
+      const primaryName = document.getElementById('primary-name');
+      const primaryScoreBadge = document.getElementById('primary-score-badge');
+      const testModeBadge = document.getElementById('test-mode-badge');
+
+      if (summaryTitle) summaryTitle.textContent = analysis.summaryTitle;
+      if (profileOverview) profileOverview.textContent = analysis.profileOverview;
+      if (primaryName) primaryName.textContent = analysis.primaryArchetype.dimension.name;
+      if (primaryScoreBadge) primaryScoreBadge.textContent = `${analysis.primaryArchetype.score}% Match`;
+      if (testModeBadge) testModeBadge.textContent = mode === 'quick' ? 'Quick Test' : 'Comprehensive Assessment';
+
+      // Power spectrum bars
+      const domPct = document.getElementById('spectrum-dom-pct');
+      const domBar = document.getElementById('spectrum-dom-bar');
+      const subPct = document.getElementById('spectrum-sub-pct');
+      const subBar = document.getElementById('spectrum-sub-bar');
+      const swiPct = document.getElementById('spectrum-swi-pct');
+      const swiBar = document.getElementById('spectrum-swi-bar');
+
+      if (domPct) domPct.textContent = `${analysis.dominantScore}%`;
+      if (domBar) domBar.style.width = `${analysis.dominantScore}%`;
+      if (subPct) subPct.textContent = `${analysis.submissiveScore}%`;
+      if (subBar) subBar.style.width = `${analysis.submissiveScore}%`;
+      if (swiPct) swiPct.textContent = `${analysis.switchScore}%`;
+      if (swiBar) swiBar.style.width = `${analysis.switchScore}%`;
+
+      // Update Compare Link
+      const compareLink = document.getElementById('compare-link') as HTMLAnchorElement;
+      if (compareLink) {
+        compareLink.href = `/compare?u=${encodedString}`;
+      }
+
+      // Top Archetypes Cards
+      const topGrid = document.getElementById('top-archetypes-grid');
+      if (topGrid) {
+        const top3 = analysis.dimensionScores.slice(0, 3);
+        topGrid.innerHTML = top3.map((item) => `
+          <div class="rounded-xl border border-border bg-surface p-5 shadow-xs hover:border-ink transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <span class="font-mono text-[11px] uppercase tracking-wider text-mute">${item.dimension.category}</span>
+              <span class="rounded-full bg-btn-primary px-2.5 py-0.5 font-mono text-xs font-semibold text-btn-primary-text">${item.score}%</span>
+            </div>
+            <h3 class="text-lg font-semibold tracking-tight text-ink">${item.dimension.name}</h3>
+            <p class="mt-2 text-xs leading-relaxed text-body line-clamp-3">${item.dimension.shortDescription}</p>
+            <div class="mt-4 pt-3 border-t border-border text-[11px] text-mute">
+              <span class="font-medium text-ink">Communication tip:</span> ${item.dimension.communicationTips}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Render All 20 Dimensions List
+      renderDimensionsList(analysis.dimensionScores, 'All');
+
+      // Filter handling
+      const filterBtns = document.querySelectorAll('.filter-pill');
+      filterBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach((b) => {
+            b.classList.remove('bg-btn-primary', 'text-btn-primary-text', 'border-btn-primary');
+            b.classList.add('bg-surface', 'text-body', 'border-border');
+          });
+          btn.classList.add('bg-btn-primary', 'text-btn-primary-text', 'border-btn-primary');
+          btn.classList.remove('bg-surface', 'text-body', 'border-border');
+
+          const cat = btn.getAttribute('data-cat') || 'All';
+          renderDimensionsList(analysis.dimensionScores, cat);
+        });
+      });
+
+      // Share button copy
+      const shareBtn = document.getElementById('share-btn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', async () => {
+          const shareUrl = `${window.location.origin}/results?data=${encodedString}&mode=${mode}`;
+          try {
+            await navigator.clipboard.writeText(shareUrl);
+            const originalText = shareBtn.innerHTML;
+            shareBtn.innerHTML = `
+              <svg class="h-3.5 w-3.5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              Copied to Clipboard!
+            `;
+            setTimeout(() => {
+              shareBtn.innerHTML = originalText;
+            }, 2500);
+          } catch (e) {
+            prompt('Copy your private results link:', shareUrl);
+          }
+        });
+      }
+
+      // Print button
+      const printBtn = document.getElementById('print-btn');
+      if (printBtn) {
+        printBtn.addEventListener('click', () => {
+          window.print();
+        });
+      }
+    }
+
+    function renderDimensionsList(scoresList: DimensionScore[], selectedCategory: string) {
+      const listEl = document.getElementById('all-dimensions-list');
+      if (!listEl) return;
+
+      const filtered = selectedCategory === 'All'
+        ? scoresList
+        : scoresList.filter((s) => s.dimension.category === selectedCategory);
+
+      listEl.innerHTML = filtered.map((item) => {
+        let badgeColor = 'bg-surface-raised text-body border border-border';
+        let barColor = 'bg-ink';
+
+        if (item.score >= 80) {
+          badgeColor = 'bg-btn-primary text-btn-primary-text';
+          barColor = 'bg-ink';
+        } else if (item.score >= 60) {
+          badgeColor = 'bg-link text-white';
+          barColor = 'bg-link';
+        } else if (item.score >= 40) {
+          badgeColor = 'bg-[#7928ca] dark:bg-[#a855f7] text-white';
+          barColor = 'bg-[#7928ca] dark:bg-[#a855f7]';
+        }
+
+        return `
+          <details class="group rounded-xl border border-border bg-surface transition-all hover:border-ink">
+            <summary class="flex flex-col sm:flex-row sm:items-center justify-between p-4 cursor-pointer select-none gap-3">
+              <div class="flex items-center gap-3">
+                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-raised border border-border font-mono text-xs font-bold text-ink">
+                  ${item.score}%
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-ink">${item.dimension.name}</span>
+                    <span class="rounded-full px-2 py-0.5 text-[10px] font-mono font-medium ${badgeColor}">
+                      ${item.tierLabel}
+                    </span>
+                  </div>
+                  <div class="text-xs text-mute">${item.dimension.category}</div>
+                </div>
+              </div>
+
+              <!-- Meter Bar -->
+              <div class="flex items-center gap-4 w-full sm:w-64">
+                <div class="h-2 w-full rounded-full bg-surface-raised border border-border/50 overflow-hidden">
+                  <div class="h-full ${barColor} transition-all duration-300" style="width: ${item.score}%;"></div>
+                </div>
+                <svg class="h-4 w-4 text-mute transition-transform group-open:rotate-180 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </summary>
+
+            <div class="border-t border-border bg-surface-raised p-5 text-xs text-body space-y-3">
+              <p class="leading-relaxed">${item.dimension.fullDescription}</p>
+              <div>
+                <span class="font-medium text-ink">Key Traits:</span>
+                <ul class="mt-1 list-disc list-inside space-y-1">
+                  ${item.dimension.characteristics.map((c) => `<li>${c}</li>`).join('')}
+                </ul>
+              </div>
+              <div class="pt-2 border-t border-border text-ink">
+                <span class="font-medium">Communication & Safety Advice:</span> ${item.dimension.communicationTips}
+              </div>
+            </div>
+          </details>
+        `;
+      }).join('');
+    }
+  }
+</script>

@@ -1,23 +1,119 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonicalPath?: string;
+  ogType?: 'website' | 'article' | 'profile';
+  ogImage?: string;
+  noindex?: boolean;
+  structuredData?: Record<string, any> | Array<Record<string, any>>;
+}
+
+const {
+  title = 'BDSM Test — Free BDSM Test Online & Dynamics Assessment',
+  description = 'Take the free BDSM test online. Explore your kink BDSM test results, 20 nuanced BDSM test categories, and intimate relationship dynamics with 100% client-side privacy.',
+  canonicalPath,
+  ogType = 'website',
+  ogImage = '/og-image.svg',
+  noindex = false,
+  structuredData,
+} = Astro.props;
+
+const siteUrl = Astro.site ? Astro.site.toString().replace(/\/$/, '') : 'https://bdsmtest.org';
+const currentPath = canonicalPath || Astro.url.pathname;
+const canonicalURL = new URL(currentPath, siteUrl).toString().replace(/\/$/, currentPath === '/' ? '/' : '');
+const absoluteOgImage = new URL(ogImage, siteUrl).toString();
+
+// Baseline WebSite Structured Data
+const baseWebsiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'BDSM Test',
+  url: `${siteUrl}/`,
+  description: 'Free, private, and anonymous online BDSM test and relationship dynamics assessment for adults (18+).',
+  inLanguage: 'en-US'
+};
+
+const allSchemas = structuredData
+  ? (Array.isArray(structuredData) ? [baseWebsiteSchema, ...structuredData] : [baseWebsiteSchema, structuredData])
+  : [baseWebsiteSchema];
+---
+
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
-</html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
+    <!-- Canonical URL -->
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Title & SEO Meta -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content="BDSM Test" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Indexation & Robots Directives -->
+    {noindex ? (
+      <meta name="robots" content="noindex, nofollow" />
+    ) : (
+      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    )}
+
+    <!-- Open Graph Metadata -->
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content="BDSM Test" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={absoluteOgImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="BDSM Test — Online Dynamics Assessment" />
+
+    <!-- Twitter / X Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={absoluteOgImage} />
+
+    <!-- Structured Data (JSON-LD) -->
+    {allSchemas.map((schema) => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    ))}
+
+    <!-- Anti-FOUC Theme Script (synchronous before paint) -->
+    <script is:inline>
+      (function () {
+        try {
+          const stored = localStorage.getItem('theme');
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const theme = stored ? stored : (prefersDark ? 'dark' : 'light');
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Typography: Geist and Geist Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Geist:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="min-h-screen flex flex-col bg-canvas text-ink selection:bg-ink selection:text-canvas">
+    <slot />
+  </body>
+</html>
