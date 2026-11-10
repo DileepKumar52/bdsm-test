@@ -1,18 +1,5 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Header from '../../components/Header.astro';
-import Footer from '../../components/Footer.astro';
-import Questionnaire from '../../components/Questionnaire.astro';
+import TestPage from '../../components/pages/TestPage.astro';
 ---
 
-<Layout
-  title="Quick BDSM Test (24 Questions) — Fast, Free BDSM Test Online"
-  description="Take the fast, free BDSM test online in 3 minutes. 24 high-signal questions evaluate your core dominant, submissive, switch, and sensory preferences with instant results."
-  canonicalPath="/test/quick"
->
-  <Header activePath="/test/quick" />
-  <main class="flex-1">
-    <Questionnaire mode="quick" />
-  </main>
-  <Footer />
-</Layout>
+<TestPage mode="quick" lang="en" />

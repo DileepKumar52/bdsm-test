@@ -1,0 +1,78 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../Header.astro';
+import Footer from '../Footer.astro';
+import Questionnaire from '../Questionnaire.astro';
+import { getLocalizedPath, type SupportedLanguage } from '../../i18n/languages';
+
+interface Props {
+  mode: 'quick' | 'comprehensive';
+  lang: SupportedLanguage;
+}
+
+const { mode, lang } = Astro.props;
+
+const titles: Record<string, Record<SupportedLanguage, string>> = {
+  quick: {
+    en: 'Quick BDSM Test (24 Questions) — Fast, Free BDSM Test Online',
+    es: 'Test BDSM Rápido (24 Preguntas) — Test BDSM Gratis Online',
+    ja: 'クイックBDSM診断（24問）— 無料オンライン嗜好テスト',
+    fr: 'Test BDSM Rapide (24 Questions) — Évaluation Gratuite en Ligne',
+    de: 'BDSM Schnelltest (24 Fragen) — Schneller, kostenloser Online-Test',
+    pt: 'Teste BDSM Rápido (24 Perguntas) — Teste BDSM Grátis Online',
+    ko: '빠른 BDSM 테스트 (24문항) — 무료 온라인 BDSM 검사',
+    it: 'Test BDSM Rapido (24 Domande) — Test BDSM Gratis Online'
+  },
+  comprehensive: {
+    en: 'Comprehensive BDSM Test (64 Questions) — In-Depth Kink Assessment',
+    es: 'Test BDSM Completo (64 Preguntas) — Evaluación Exhaustiva de Roles',
+    ja: '総合BDSM診断（64問）— 20タイプ精密オンライン分析',
+    fr: 'Test BDSM Complet (64 Questions) — Évaluation Approfondie des Rôles',
+    de: 'Ausführlicher BDSM Test (64 Fragen) — Umfassende Kink-Analyse',
+    pt: 'Teste BDSM Completo (64 Perguntas) — Análise Aprofundada de Papéis',
+    ko: '정밀 종합 BDSM 테스트 (64문항) — 20가지 성향 심층 분석 검사',
+    it: 'Test BDSM Completo (64 Domande) — Valutazione Approfondita dei Ruoli'
+  }
+};
+
+const descriptions: Record<string, Record<SupportedLanguage, string>> = {
+  quick: {
+    en: 'Take the fast, free BDSM test online in 3 minutes. 24 high-signal questions evaluate your core dominant, submissive, switch, and sensory preferences with instant results.',
+    es: 'Haz el test BDSM rápido gratis online en 3 minutos. 24 preguntas clave evalúan tus preferencias dominantes, sumisas, switch y sensoriales con resultados inmediatos.',
+    ja: '約3分で完了する無料のクイックBDSM診断。24問の重要設問からドミナント、サブミッシブ、スイッチ、感覚派の傾向を即座に判定します。',
+    fr: 'Passez le test BDSM rapide en 3 minutes. 24 questions ciblées évaluent vos orientations dominantes, soumises, switch et sensorielles sans attente.',
+    de: 'Absolvieren Sie den schnellen BDSM-Test online in 3 Minuten. 24 präzise Fragen werten Ihre Kernneigungen wie Dominanz, Devotion und Switches aus.',
+    pt: 'Faça o teste BDSM rápido online em 3 minutos. 24 questões avaliam suas preferências dominantes, submissas, switch e sensoriais com resultados imediatos.',
+    ko: '3분 만에 완료하는 무료 온라인 빠른 BDSM 테스트. 24개 핵심 문항으로 도미넌트, 서브미시브, 스위치, 감각적 선호도를 즉시 분석합니다.',
+    it: 'Fai il test BDSM rapido online in 3 minuti. 24 domande chiave valutano le tue preferenze dominanti, sottomesse, switch e sensoriali con risultati immediati.'
+  },
+  comprehensive: {
+    en: 'Complete the comprehensive BDSM test online for a deep assessment of 20 distinct categories, protocol preferences, psychological roles, and sensation thresholds.',
+    es: 'Realiza el test BDSM completo online para una evaluación exhaustiva de 20 categorías, protocolos, roles psicológicos y umbrales sensoriales.',
+    ja: '全64問の総合BDSM診断。20のカテゴリー、主従プロトコル、心理的欲求、身体感覚の許容度を多面的に分析します。',
+    fr: 'Effectuez le test BDSM complet en ligne pour une exploration fouillée de 20 catégories, protocoles, postures psychologiques et limites corporelles.',
+    de: 'Absolvieren Sie den ausführlichen BDSM-Test für eine detaillierte Erfassung von 20 Kategorien, psychologischen Rollen und Reizschwellen.',
+    pt: 'Complete o teste BDSM completo online para uma análise detalhada de 20 categorias, preferências protocolares, papéis psicológicos e limites sensoriais.',
+    ko: '20가지 성향 카테고리 전체, 프로토콜 선호도, 심리적 역할, 감각 한계선을 심층 평가하는 정밀 종합 BDSM 테스트를 시작하세요.',
+    it: 'Completa il test BDSM completo online per un’indagine dettagliata su 20 categorie, preferenze di protocollo, ruoli psicologici e soglie sensoriali.'
+  }
+};
+
+const currentCanonical = getLocalizedPath(lang, mode === 'quick' ? '/test/quick' : '/test/comprehensive');
+const title = titles[mode][lang] || titles[mode].en;
+const description = descriptions[mode][lang] || descriptions[mode].en;
+---
+
+<Layout
+  title={title}
+  description={description}
+  canonicalPath={currentCanonical}
+  lang={lang}
+>
+  <Header activePath={currentCanonical} lang={lang} />
+  <main class="flex-1">
+    <Questionnaire mode={mode} lang={lang} />
+  </main>
+  <Footer lang={lang} />
+</Layout>
+

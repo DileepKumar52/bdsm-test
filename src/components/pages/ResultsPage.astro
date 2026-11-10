@@ -1,0 +1,417 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../Header.astro';
+import Footer from '../Footer.astro';
+import { DIMENSION_CATEGORIES } from '../../data/dimensions';
+import { getLocalizedDimensions, CATEGORY_TRANSLATIONS } from '../../i18n/dimensions';
+import { getResultsPageContent } from '../../i18n/pages/results';
+import { getLocalizedPath, type SupportedLanguage } from '../../i18n/languages';
+
+interface Props {
+  lang: SupportedLanguage;
+}
+
+const { lang } = Astro.props;
+const content = getResultsPageContent(lang);
+const dimensions = getLocalizedDimensions(lang);
+const catTrans = CATEGORY_TRANSLATIONS[lang] || CATEGORY_TRANSLATIONS.en;
+const currentPath = getLocalizedPath(lang, '/results');
+---
+
+<Layout
+  title={content.meta.title}
+  description={content.meta.description}
+  canonicalPath={currentPath}
+  lang={lang}
+>
+  <Header activePath={currentPath} lang={lang} />
+
+  <main class="flex-1 py-10 md:py-16" id="results-page" data-dimensions={JSON.stringify(dimensions)} data-lang={lang} data-cat-trans={JSON.stringify(catTrans)}>
+    <!-- Hero Mesh Gradient -->
+    <div class="pointer-events-none absolute inset-x-0 top-16 h-80 hero-mesh"></div>
+
+    <div class="relative mx-auto max-w-5xl px-4 sm:px-6">
+      <!-- Loading State -->
+      <div id="results-loading" class="py-20 text-center">
+        <div class="inline-block h-8 w-8 animate-spin rounded-full border-2 border-ink border-t-transparent"></div>
+        <p class="mt-4 font-mono text-xs uppercase tracking-wider text-mute">{content.loading}</p>
+      </div>
+
+      <!-- No Data / Fallback State -->
+      <div id="results-empty" class="hidden py-16 text-center">
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-surface-raised border border-border text-ink">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <h2 class="mt-4 text-2xl font-semibold tracking-[-0.8px] text-ink">{content.empty.title}</h2>
+        <p class="mx-auto mt-2 max-w-md text-sm text-body">
+          {content.empty.description}
+        </p>
+        <div class="mt-6 flex flex-wrap justify-center gap-3">
+          <a
+            href={getLocalizedPath(lang, '/test/quick')}
+            class="rounded-full bg-btn-primary px-5 py-2.5 text-xs font-semibold text-btn-primary-text hover:opacity-90 transition-colors shadow-xs"
+          >
+            {content.empty.quickBtn}
+          </a>
+          <a
+            href={getLocalizedPath(lang, '/test/comprehensive')}
+            class="rounded-full border border-border bg-surface px-5 py-2.5 text-xs font-semibold text-ink hover:bg-surface-raised transition-colors"
+          >
+            {content.empty.compBtn}
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Results Container -->
+      <div id="results-content" class="hidden space-y-12">
+        <!-- 1. Top Executive Profile Card -->
+        <div class="overflow-hidden rounded-2xl border border-border bg-surface p-6 md:p-10 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b border-border pb-8">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="rounded bg-btn-primary px-2 py-0.5 font-mono text-[10px] font-medium uppercase text-btn-primary-text">
+                  {content.executiveCard.badge}
+                </span>
+                <span id="test-mode-badge" class="rounded border border-border bg-surface-raised px-2 py-0.5 font-mono text-[10px] text-body">
+                  Mode
+                </span>
+              </div>
+              <h1 id="summary-title" class="text-3xl sm:text-4xl font-semibold tracking-[-1.5px] text-ink">
+                Profile Title
+              </h1>
+              <p id="profile-overview" class="max-w-2xl text-sm leading-relaxed text-body">
+                Profile description...
+              </p>
+            </div>
+
+            <div class="flex flex-col items-start md:items-end gap-3 shrink-0">
+              <button
+                id="share-btn"
+                type="button"
+                class="inline-flex items-center gap-2 rounded-full bg-btn-primary px-5 py-2.5 text-xs font-semibold text-btn-primary-text shadow-xs hover:opacity-90 transition-all cursor-pointer"
+              >
+                <span>{content.actions.copyLinkBtn}</span>
+              </button>
+              <span class="text-[11px] text-mute font-mono">100% Client-Side Privacy</span>
+            </div>
+          </div>
+
+          <!-- Quick Stat Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8">
+            <div class="rounded-xl border border-border bg-surface-raised p-4">
+              <div class="text-xs font-mono uppercase text-mute mb-1">{content.executiveCard.dominantTraitLabel}</div>
+              <div id="top-dimension-name" class="text-lg font-semibold text-ink">--</div>
+              <div id="top-dimension-score" class="text-xs text-mute font-mono">0% Affinity</div>
+            </div>
+            <div class="rounded-xl border border-border bg-surface-raised p-4">
+              <div class="text-xs font-mono uppercase text-mute mb-1">{content.executiveCard.spectrumLabel}</div>
+              <div id="power-orientation-text" class="text-lg font-semibold text-ink">--</div>
+              <div id="power-orientation-ratio" class="text-xs text-mute font-mono">--</div>
+            </div>
+            <div class="rounded-xl border border-border bg-surface-raised p-4">
+              <div class="text-xs font-mono uppercase text-mute mb-1">Key Dynamic Trait</div>
+              <div id="secondary-dimension-name" class="text-lg font-semibold text-ink">--</div>
+              <div id="secondary-dimension-score" class="text-xs text-mute font-mono">0% Affinity</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. High Affinity Highlights -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold tracking-tight text-ink">
+              {content.breakdown.highMatch}
+            </h2>
+            <span class="text-xs text-mute font-mono">Top Traits</span>
+          </div>
+          <div id="top-dimensions-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Dynamically populated via script -->
+          </div>
+        </div>
+
+        <!-- 3. All 20 Dimensions Breakdown -->
+        <div class="rounded-2xl border border-border bg-surface p-6 md:p-8">
+          <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
+            <div>
+              <h2 class="text-xl font-semibold tracking-tight text-ink">
+                {content.breakdown.title}
+              </h2>
+              <p class="text-xs text-body mt-1">
+                {content.breakdown.subtitle}
+              </p>
+            </div>
+
+            <!-- Category Filter Tabs -->
+            <div class="flex flex-wrap gap-1.5" id="category-filter-tabs">
+              <button
+                type="button"
+                data-cat="All"
+                class="cat-filter-btn rounded-full px-3 py-1 font-mono text-[11px] font-medium border bg-btn-primary text-btn-primary-text border-btn-primary cursor-pointer transition-colors"
+              >
+                All
+              </button>
+              {DIMENSION_CATEGORIES.map((c) => {
+                const locC = catTrans[c] || c;
+                return (
+                  <button
+                    type="button"
+                    data-cat={c}
+                    class="cat-filter-btn rounded-full px-3 py-1 font-mono text-[11px] font-medium border bg-surface text-body border-border hover:border-ink hover:text-ink cursor-pointer transition-colors"
+                  >
+                    {locC}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <!-- Dimensions Accordion List -->
+          <div class="space-y-3" id="all-dimensions-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- 4. Next Steps & Compare Callout -->
+        <div class="rounded-2xl border border-border bg-surface-raised p-8 text-center sm:text-left">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div class="space-y-2 max-w-xl">
+              <h3 class="text-xl font-semibold tracking-tight text-ink">
+                {content.actions.shareTitle}
+              </h3>
+              <p class="text-xs leading-relaxed text-body">
+                {content.actions.shareSubtitle}
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <a
+                href={getLocalizedPath(lang, '/compare')}
+                id="compare-partner-link"
+                class="rounded-full bg-btn-primary px-6 py-2.5 text-xs font-semibold text-btn-primary-text hover:opacity-90 transition-colors shadow-xs"
+              >
+                {content.actions.compareBtn}
+              </a>
+              <a
+                href={getLocalizedPath(lang, '/test/quick')}
+                class="rounded-full border border-border bg-surface px-5 py-2.5 text-xs font-semibold text-ink hover:bg-surface-raised transition-colors"
+              >
+                {content.actions.retakeBtn}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer lang={lang} />
+</Layout>
+
+<script>
+  import { decodeScores, analyzeProfile, type DimensionScore } from '../../utils/scoring';
+  import type { Dimension } from '../../data/dimensions';
+
+  const page = document.getElementById('results-page');
+  if (page) {
+    const dimensionsMap: Record<string, Dimension> = JSON.parse(page.getAttribute('data-dimensions') || '{}');
+    const catTrans: Record<string, string> = JSON.parse(page.getAttribute('data-cat-trans') || '{}');
+
+    const loadingEl = document.getElementById('results-loading');
+    const emptyEl = document.getElementById('results-empty');
+    const contentEl = document.getElementById('results-content');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const dataParam = urlParams.get('data');
+    const mode = urlParams.get('mode') || 'comprehensive';
+
+    let scores = dataParam ? decodeScores(dataParam) : null;
+
+    if (!scores) {
+      try {
+        const saved = localStorage.getItem('bdsm_latest_results');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.scores) {
+            scores = parsed.scores;
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (!scores || Object.keys(scores).length === 0) {
+      if (loadingEl) loadingEl.classList.add('hidden');
+      if (emptyEl) emptyEl.classList.remove('hidden');
+    } else {
+      renderResults(scores, mode, dataParam || '');
+    }
+
+    function renderResults(scoreMap: Record<string, number>, modeStr: string, encodedString: string) {
+      if (loadingEl) loadingEl.classList.add('hidden');
+      if (contentEl) contentEl.classList.remove('hidden');
+
+      const analysis = analyzeProfile(scoreMap, dimensionsMap);
+
+      const summaryTitle = document.getElementById('summary-title');
+      if (summaryTitle) summaryTitle.textContent = analysis.summaryTitle;
+
+      const profileOverview = document.getElementById('profile-overview');
+      if (profileOverview) profileOverview.textContent = analysis.profileOverview;
+
+      const modeBadge = document.getElementById('test-mode-badge');
+      if (modeBadge) {
+        modeBadge.textContent = modeStr === 'quick' ? 'Quick Mode (24 Qs)' : 'Comprehensive Mode (64 Qs)';
+      }
+
+      if (analysis.dominantDimension) {
+        const topName = document.getElementById('top-dimension-name');
+        const topScore = document.getElementById('top-dimension-score');
+        if (topName) topName.textContent = analysis.dominantDimension.dimension.name;
+        if (topScore) topScore.textContent = `${analysis.dominantDimension.score}% Affinity`;
+      }
+
+      const powerOrientText = document.getElementById('power-orientation-text');
+      const powerOrientRatio = document.getElementById('power-orientation-ratio');
+      if (powerOrientText) powerOrientText.textContent = analysis.powerOrientation;
+      if (powerOrientRatio) {
+        const dom = scoreMap['dominant'] || 0;
+        const sub = scoreMap['submissive'] || 0;
+        powerOrientRatio.textContent = `Dominant ${dom}% • Submissive ${sub}%`;
+      }
+
+      if (analysis.topDimensions.length > 1) {
+        const sec = analysis.topDimensions[1];
+        const secName = document.getElementById('secondary-dimension-name');
+        const secScore = document.getElementById('secondary-dimension-score');
+        if (secName) secName.textContent = sec.dimension.name;
+        if (secScore) secScore.textContent = `${sec.score}% Affinity`;
+      }
+
+      const topGrid = document.getElementById('top-dimensions-grid');
+      if (topGrid) {
+        topGrid.innerHTML = analysis.topDimensions.slice(0, 3).map((item: DimensionScore) => {
+          const locCategory = catTrans[item.dimension.category] || item.dimension.category;
+          return `
+            <div class="rounded-xl border border-border bg-surface p-5 shadow-xs hover:border-ink transition-all">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-[10px] uppercase text-mute">${locCategory}</span>
+                <span class="rounded-full bg-btn-primary px-2.5 py-0.5 font-mono text-xs font-bold text-btn-primary-text">
+                  ${item.score}%
+                </span>
+              </div>
+              <h3 class="text-base font-semibold text-ink">${item.dimension.name}</h3>
+              <p class="mt-2 text-xs leading-relaxed text-body line-clamp-3">
+                ${item.dimension.shortDescription}
+              </p>
+            </div>
+          `;
+        }).join('');
+      }
+
+      renderDimensionsList(analysis.dimensionScores, 'All');
+
+      const catButtons = document.querySelectorAll('.cat-filter-btn');
+      catButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          catButtons.forEach((b) => {
+            b.classList.remove('bg-btn-primary', 'text-btn-primary-text', 'border-btn-primary');
+            b.classList.add('bg-surface', 'text-body', 'border-border');
+          });
+          btn.classList.add('bg-btn-primary', 'text-btn-primary-text', 'border-btn-primary');
+          btn.classList.remove('bg-surface', 'text-body', 'border-border');
+
+          const cat = btn.getAttribute('data-cat') || 'All';
+          renderDimensionsList(analysis.dimensionScores, cat);
+        });
+      });
+
+      const shareBtn = document.getElementById('share-btn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', async () => {
+          const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodedString}&mode=${modeStr}`;
+          try {
+            await navigator.clipboard.writeText(shareUrl);
+            const original = shareBtn.innerHTML;
+            shareBtn.innerHTML = '<span>✓ Copied!</span>';
+            setTimeout(() => {
+              shareBtn.innerHTML = original;
+            }, 2500);
+          } catch (e) {
+            prompt('Copy link:', shareUrl);
+          }
+        });
+      }
+    }
+
+    function renderDimensionsList(scoresList: DimensionScore[], selectedCategory: string) {
+      const listEl = document.getElementById('all-dimensions-list');
+      if (!listEl) return;
+
+      const filtered = selectedCategory === 'All'
+        ? scoresList
+        : scoresList.filter((s) => s.dimension.category === selectedCategory);
+
+      listEl.innerHTML = filtered.map((item: DimensionScore) => {
+        let badgeColor = 'bg-surface-raised text-body border border-border';
+        let barColor = 'bg-ink';
+
+        if (item.score >= 80) {
+          badgeColor = 'bg-btn-primary text-btn-primary-text';
+          barColor = 'bg-ink';
+        } else if (item.score >= 60) {
+          badgeColor = 'bg-link text-white';
+          barColor = 'bg-link';
+        } else if (item.score >= 40) {
+          badgeColor = 'bg-[#7928ca] dark:bg-[#a855f7] text-white';
+          barColor = 'bg-[#7928ca] dark:bg-[#a855f7]';
+        }
+
+        const locCat = catTrans[item.dimension.category] || item.dimension.category;
+
+        return `
+          <details class="group rounded-xl border border-border bg-surface transition-all hover:border-ink">
+            <summary class="flex flex-col sm:flex-row sm:items-center justify-between p-4 cursor-pointer select-none gap-3">
+              <div class="flex items-center gap-3">
+                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-raised border border-border font-mono text-xs font-bold text-ink">
+                  ${item.score}%
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-ink">${item.dimension.name}</span>
+                    <span class="rounded-full px-2 py-0.5 text-[10px] font-mono font-medium ${badgeColor}">
+                      ${item.tierLabel}
+                    </span>
+                  </div>
+                  <div class="text-xs text-mute">${locCat}</div>
+                </div>
+              </div>
+
+              <!-- Meter Bar -->
+              <div class="flex items-center gap-4 w-full sm:w-64">
+                <div class="h-2 w-full rounded-full bg-surface-raised border border-border/50 overflow-hidden">
+                  <div class="h-full ${barColor} transition-all duration-300" style="width: ${item.score}%;"></div>
+                </div>
+                <svg class="h-4 w-4 text-mute transition-transform group-open:rotate-180 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </summary>
+
+            <div class="border-t border-border bg-surface-raised p-5 text-xs text-body space-y-3">
+              <p class="leading-relaxed">${item.dimension.fullDescription}</p>
+              <div>
+                <span class="font-medium text-ink">Characteristics:</span>
+                <ul class="mt-1 list-disc list-inside space-y-1">
+                  ${item.dimension.characteristics.map((c) => `<li>${c}</li>`).join('')}
+                </ul>
+              </div>
+              <div class="pt-2 border-t border-border text-ink">
+                <span class="font-medium">Communication:</span> ${item.dimension.communicationTips}
+              </div>
+            </div>
+          </details>
+        `;
+      }).join('');
+    }
+  }
+</script>

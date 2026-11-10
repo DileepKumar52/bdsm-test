@@ -1,5 +1,11 @@
 ---
 import '../styles/global.css';
+import {
+  getLanguageFromPath,
+  getHreflangLinks,
+  SUPPORTED_LANGUAGES,
+  type SupportedLanguage
+} from '../i18n/languages';
 
 interface Props {
   title?: string;
@@ -8,6 +14,7 @@ interface Props {
   ogType?: 'website' | 'article' | 'profile';
   ogImage?: string;
   noindex?: boolean;
+  lang?: SupportedLanguage;
   structuredData?: Record<string, any> | Array<Record<string, any>>;
 }
 
@@ -18,13 +25,20 @@ const {
   ogType = 'website',
   ogImage = '/og-image.svg',
   noindex = false,
+  lang,
   structuredData,
 } = Astro.props;
 
 const siteUrl = Astro.site ? Astro.site.toString().replace(/\/$/, '') : 'https://bdsmtest.org';
 const currentPath = canonicalPath || Astro.url.pathname;
-const canonicalURL = new URL(currentPath, siteUrl).toString().replace(/\/$/, currentPath === '/' ? '/' : '');
+const currentLang: SupportedLanguage = lang || getLanguageFromPath(currentPath);
+const langConfig = SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
+
+const canonicalURL = new URL(currentPath, siteUrl).toString().replace(/\/$/, currentPath === '/' || currentPath.endsWith('/') ? '/' : '');
 const absoluteOgImage = new URL(ogImage, siteUrl).toString();
+
+// Generate reciprocal hreflang links + x-default
+const hreflangLinks = getHreflangLinks(currentPath, siteUrl);
 
 // Baseline WebSite Structured Data
 const baseWebsiteSchema = {
@@ -33,7 +47,7 @@ const baseWebsiteSchema = {
   name: 'BDSM Test',
   url: `${siteUrl}/`,
   description: 'Free, private, and anonymous online BDSM test and relationship dynamics assessment for adults (18+).',
-  inLanguage: 'en-US'
+  inLanguage: currentLang
 };
 
 const allSchemas = structuredData
@@ -42,15 +56,20 @@ const allSchemas = structuredData
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={currentLang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
 
-    <!-- Canonical URL -->
+    <!-- Canonical URL (Self-Referencing) -->
     <link rel="canonical" href={canonicalURL} />
+
+    <!-- Reciprocal Multilingual Hreflang Tags -->
+    {hreflangLinks.map((hRef) => (
+      <link rel="alternate" hreflang={hRef.lang} href={hRef.url} />
+    ))}
 
     <!-- Title & SEO Meta -->
     <title>{title}</title>
@@ -66,7 +85,7 @@ const allSchemas = structuredData
     )}
 
     <!-- Open Graph Metadata -->
-    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale" content={langConfig.ogLocale} />
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content="BDSM Test" />
     <meta property="og:title" content={title} />

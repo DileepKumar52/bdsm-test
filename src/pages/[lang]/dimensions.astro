@@ -1,0 +1,15 @@
+---
+import DimensionsPage from '../../components/pages/DimensionsPage.astro';
+import { NON_DEFAULT_LANGUAGES, type SupportedLanguage } from '../../i18n/languages';
+
+export function getStaticPaths() {
+  return NON_DEFAULT_LANGUAGES.map((lang) => ({
+    params: { lang }
+  }));
+}
+
+const { lang } = Astro.params;
+---
+
+<DimensionsPage lang={lang as SupportedLanguage} />
+

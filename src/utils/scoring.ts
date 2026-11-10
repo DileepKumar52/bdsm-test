@@ -195,6 +195,68 @@ export function analyzeResults(
   };
 }
 
+export function analyzeProfile(
+  scores: Record<string, number>,
+  dimensionsMap: Record<string, Dimension> = DIMENSIONS
+) {
+  const dimensionScores: DimensionScore[] = Object.entries(scores)
+    .filter(([id]) => dimensionsMap[id])
+    .map(([id, score]) => {
+      const dimension = dimensionsMap[id];
+      const { tier, tierLabel } = getTier(score);
+      return { dimension, score, tier, tierLabel };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  const dominantDimension = dimensionScores[0] || null;
+  const topDimensions = dimensionScores.filter((d) => d.score >= 30);
+
+  const dom = scores['dominant'] || 0;
+  const sub = scores['submissive'] || 0;
+  const swi = scores['switch'] || 0;
+
+  let powerOrientation = 'Power Switch / Versatile';
+  if (dom > sub + 15) {
+    powerOrientation = 'Dominant / Leader Leaning';
+  } else if (sub > dom + 15) {
+    powerOrientation = 'Submissive / Receptive Leaning';
+  }
+
+  const primary = dominantDimension || {
+    dimension: dimensionsMap['vanilla'] || DIMENSIONS['vanilla'],
+    score: 50,
+    tier: 'Moderate' as const,
+    tierLabel: 'Moderate'
+  };
+
+  const secondaries = dimensionScores
+    .slice(1)
+    .filter((ds) => ds.score >= 40 && ds.dimension.id !== 'switch')
+    .slice(0, 3);
+
+  const summaryTitle = generateSummaryTitle(primary, secondaries, scores);
+
+  let profileOverview = '';
+  if (dom > sub + 20) {
+    profileOverview = 'Your profile shows a distinct affinity for leadership, direction, and authority. You are drawn to taking initiative and guiding your partner with confidence.';
+  } else if (sub > dom + 20) {
+    profileOverview = 'Your profile demonstrates a strong capacity for trust, surrender, and deep devotion. You feel most liberated when relinquishing decision-making to a partner you respect.';
+  } else if (swi >= 60 || (dom >= 50 && sub >= 50)) {
+    profileOverview = 'You possess high versatility and empathy for both sides of the power spectrum. Your desires fluctuate based on mood, trust, and partner chemistry.';
+  } else {
+    profileOverview = 'Your profile reflects a balanced, exploratory orientation with specific targeted interests rather than a monolithic dominant or submissive identity.';
+  }
+
+  return {
+    summaryTitle,
+    profileOverview,
+    powerOrientation,
+    dominantDimension,
+    topDimensions: topDimensions.length > 0 ? topDimensions : dimensionScores.slice(0, 3),
+    dimensionScores
+  };
+}
+
 // Compact URL encoding for 100% client-side privacy sharing
 export function encodeScores(scores: Record<string, number>): string {
   try {

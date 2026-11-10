@@ -1,0 +1,85 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../Header.astro';
+import Footer from '../Footer.astro';
+import { getInfoPagesContent } from '../../i18n/pages/infoPages';
+import { getLocalizedPath, type SupportedLanguage } from '../../i18n/languages';
+
+interface Props {
+  lang: SupportedLanguage;
+}
+
+const { lang } = Astro.props;
+const info = getInfoPagesContent(lang).about;
+const currentPath = getLocalizedPath(lang, '/about');
+---
+
+<Layout
+  title={info.metaTitle}
+  description={info.metaDescription}
+  canonicalPath={currentPath}
+  lang={lang}
+>
+  <Header activePath={currentPath} lang={lang} />
+
+  <main class="flex-1 py-12 md:py-20">
+    <div class="pointer-events-none absolute inset-x-0 top-16 h-80 hero-mesh"></div>
+
+    <div class="relative mx-auto max-w-4xl px-4 sm:px-6">
+      <!-- Page Header -->
+      <div class="mb-12">
+        <span class="rounded-full border border-border bg-surface px-3 py-1 font-mono text-xs uppercase tracking-wider text-mute shadow-xs">
+          {info.eyebrow}
+        </span>
+        <h1 class="mt-4 text-3xl sm:text-5xl font-semibold tracking-[-1.5px] text-ink">
+          {info.h1}
+        </h1>
+        <p class="mt-4 text-base sm:text-lg text-body leading-relaxed">
+          {info.subtitle}
+        </p>
+      </div>
+
+      <!-- Main Content Cards -->
+      <div class="space-y-8">
+        <!-- Card 1: Our Pillars -->
+        <section class="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-xs">
+          <h2 class="text-xl font-semibold tracking-tight text-ink">
+            Core Foundations & Philosophy
+          </h2>
+          <div class="mt-4 space-y-3 text-sm text-body leading-relaxed">
+            <ul class="list-disc list-inside space-y-2 pt-2 text-ink">
+              <li><strong class="font-semibold text-ink">{info.pillar1Title}:</strong> {info.pillar1Desc}</li>
+              <li><strong class="font-semibold text-ink">{info.pillar2Title}:</strong> {info.pillar2Desc}</li>
+              <li><strong class="font-semibold text-ink">{info.pillar3Title}:</strong> {info.pillar3Desc}</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Card 2: CTA -->
+        <section class="rounded-2xl border border-border bg-surface-raised p-6 sm:p-8 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div>
+            <h2 class="text-lg font-semibold text-ink">Explore Your Personal Orientation</h2>
+            <p class="text-xs text-mute mt-1">Begin your anonymous self-assessment in just a few minutes.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a
+              href={getLocalizedPath(lang, '/test/quick')}
+              class="rounded-full bg-btn-primary px-5 py-2 text-xs font-semibold text-btn-primary-text hover:opacity-90 transition-colors shadow-xs"
+            >
+              Quick Test (3 min)
+            </a>
+            <a
+              href={getLocalizedPath(lang, '/test/comprehensive')}
+              class="rounded-full border border-border bg-surface px-5 py-2 text-xs font-semibold text-ink hover:bg-surface-raised transition-colors"
+            >
+              Comprehensive Test (10 min)
+            </a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <Footer lang={lang} />
+</Layout>
+

@@ -1,5 +1,12 @@
 ---
-import { QUESTIONS, LIKERT_OPTIONS } from '../data/questions';
+import {
+  getLanguageFromPath,
+  getLocalizedPath,
+  type SupportedLanguage
+} from '../i18n/languages';
+import { getTranslations } from '../i18n/ui';
+import { getLocalizedQuestions } from '../i18n/questions';
+import { CATEGORY_TRANSLATIONS } from '../i18n/dimensions';
 import {
   AGE_GROUPS,
   EXPERIENCE_LEVELS,
@@ -9,18 +16,44 @@ import {
 
 interface Props {
   mode: 'quick' | 'comprehensive';
+  lang?: SupportedLanguage;
 }
 
-const { mode } = Astro.props;
-const testQuestions = mode === 'quick' ? QUESTIONS.filter((q) => q.isQuick) : QUESTIONS;
-const testTitle = mode === 'quick' ? 'Quick BDSM Assessment' : 'Comprehensive BDSM Assessment';
-const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
+const { mode, lang } = Astro.props;
+const currentLang: SupportedLanguage = lang || getLanguageFromPath(Astro.url.pathname);
+const t = getTranslations(currentLang);
+
+const allLocalizedQuestions = getLocalizedQuestions(currentLang);
+const testQuestions = mode === 'quick' ? allLocalizedQuestions.filter((q) => q.isQuick) : allLocalizedQuestions;
+
+const testTitle = mode === 'quick' 
+  ? (currentLang === 'ja' ? 'クイックBDSM診断（24問）' : (currentLang === 'es' ? 'Test BDSM Rápido (24 Preguntas)' : (currentLang === 'fr' ? 'Test BDSM Rapide (24 Questions)' : (currentLang === 'de' ? 'BDSM Schnelltest (24 Fragen)' : (currentLang === 'pt' ? 'Teste BDSM Rápido (24 Perguntas)' : (currentLang === 'ko' ? '빠른 BDSM 테스트 (24문항)' : (currentLang === 'it' ? 'Test BDSM Rapido (24 Domande)' : 'Quick BDSM Assessment')))))))
+  : (currentLang === 'ja' ? '総合BDSM診断（64問）' : (currentLang === 'es' ? 'Test BDSM Completo (64 Preguntas)' : (currentLang === 'fr' ? 'Test BDSM Complet (64 Questions)' : (currentLang === 'de' ? 'Ausführlicher BDSM Test (64 Fragen)' : (currentLang === 'pt' ? 'Teste BDSM Completo (64 Perguntas)' : (currentLang === 'ko' ? '정밀 종합 BDSM 테스트 (64문항)' : (currentLang === 'it' ? 'Test BDSM Completo (64 Domande)' : 'Comprehensive BDSM Assessment')))))));
+
+const estimatedTime = mode === 'quick' ? '3–4 min' : '8–12 min';
+
+const localizedLikertOptions = [
+  { value: 0, label: t.likert.stronglyDisagree, hint: t.likert.stronglyDisagreeHint },
+  { value: 25, label: t.likert.disagree, hint: t.likert.disagreeHint },
+  { value: 50, label: t.likert.neutral, hint: t.likert.neutralHint },
+  { value: 75, label: t.likert.agree, hint: t.likert.agreeHint },
+  { value: 100, label: t.likert.stronglyAgree, hint: t.likert.stronglyAgreeHint }
+] as const;
+
+const resultsBaseUrl = getLocalizedPath(currentLang, '/results');
+const homeUrl = getLocalizedPath(currentLang, '/');
 ---
 
 <div
   class="relative min-h-[calc(100vh-4rem)] py-8 md:py-14"
   data-test-mode={mode}
+  data-lang={currentLang}
+  data-results-url={resultsBaseUrl}
   data-questions={JSON.stringify(testQuestions)}
+  data-category-translations={JSON.stringify(CATEGORY_TRANSLATIONS[currentLang] || CATEGORY_TRANSLATIONS.en)}
+  data-confirm-reset={t.questionnaire.retakeConfirm}
+  data-q-label={t.questionnaire.questionLabel}
+  data-q-of={t.questionnaire.of}
 >
   <!-- Background Glow -->
   <div class="pointer-events-none absolute inset-x-0 top-0 h-64 hero-mesh"></div>
@@ -34,16 +67,16 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
       <div class="border-b border-border pb-6">
         <div class="flex items-center gap-2">
           <span class="rounded bg-surface-raised px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-ink border border-border">
-            Pre-Test Setup
+            {t.onboarding.badge}
           </span>
           <span class="text-border">•</span>
-          <span class="text-xs text-mute">{mode === 'quick' ? 'Quick Test (24 Qs)' : 'Comprehensive Test (64 Qs)'}</span>
+          <span class="text-xs text-mute">{mode === 'quick' ? `${testQuestions.length} Qs` : `${testQuestions.length} Qs`}</span>
         </div>
         <h1 class="mt-3 text-2xl sm:text-3xl font-semibold tracking-[-0.8px] text-ink">
-          Before You Begin
+          {t.onboarding.title}
         </h1>
         <p class="mt-2 text-xs sm:text-sm text-body leading-relaxed">
-          Please review the setup questions below. Questions 1–4 are optional, but you must confirm you are at least 18 years old. We use your experience level to adapt terminology and provide helpful definitions throughout the test.
+          {t.onboarding.description}
         </p>
 
         <!-- Privacy & Non-Scoring Guarantee -->
@@ -52,8 +85,8 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
           <div>
-            <strong class="font-semibold text-ink">Zero Scoring Impact:</strong>
-            None of these onboarding answers affect your score, categories, or results. They are used exclusively in your local browser to tailor question phrasing.
+            <strong class="font-semibold text-ink">{t.onboarding.privacyNoticeBold}</strong>
+            {t.onboarding.privacyNotice}
           </div>
         </div>
       </div>
@@ -64,9 +97,9 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <h2 class="text-sm font-semibold text-ink">
-              1. Age Group &amp; Confirmation <span class="text-error">*</span>
+              {t.onboarding.q1Title} <span class="text-error">*</span>
             </h2>
-            <span class="text-[11px] text-mute font-mono">18+ Required</span>
+            <span class="text-[11px] text-mute font-mono">{t.onboarding.q1Required}</span>
           </div>
 
           <!-- Mandatory 18+ Checkbox -->
@@ -83,22 +116,22 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
               />
               <div class="text-xs">
                 <span class="font-medium text-ink">
-                  I confirm that I am at least 18 years of age.
+                  {t.onboarding.ageConfirmText}
                 </span>
                 <p class="mt-0.5 text-mute">
-                  This assessment explores adult themes and is strictly intended for individuals 18 years or older.
+                  {t.onboarding.ageConfirmSub}
                 </p>
               </div>
             </label>
             <div id="age-confirm-error" class="hidden mt-2 text-[11px] font-medium text-error pl-7">
-              You must confirm that you are at least 18 years old to proceed.
+              {t.onboarding.ageConfirmError}
             </div>
           </div>
 
           <!-- Age Group Selection (Optional) -->
           <div>
             <label class="block text-xs font-medium text-body mb-2">
-              Which age group do you belong to? <span class="text-mute font-normal">(Optional)</span>
+              {t.onboarding.ageSelectLabel}
             </label>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {AGE_GROUPS.map((group) => (
@@ -120,51 +153,51 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
         <div class="space-y-3 border-t border-border pt-6">
           <div class="flex items-center justify-between">
             <h2 class="text-sm font-semibold text-ink">
-              2. BDSM Experience <span class="text-mute font-normal">(Optional)</span>
+              {t.onboarding.q2Title}
             </h2>
-            <span class="text-[11px] text-link font-medium">Adapts Phrasing</span>
+            <span class="text-[11px] text-link font-medium">{t.onboarding.q2Optional}</span>
           </div>
           <p class="text-xs text-body leading-relaxed">
-            How would you describe your experience with BDSM? We will tailor technical terminology and explanations accordingly.
+            {t.onboarding.q2Subtitle}
           </p>
 
           <div class="space-y-2">
-            {EXPERIENCE_LEVELS.map((exp) => (
-              <label class="onboarding-exp-card group flex items-start gap-3 rounded-xl border border-border bg-surface p-3.5 text-left hover:border-ink hover:bg-surface-raised cursor-pointer transition-all select-none">
-                <input
-                  type="radio"
-                  name="experience"
-                  value={exp.id}
-                  checked={exp.id === 'some'}
-                  class="sr-only"
-                />
-                <div class="radio-indicator flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-border mt-0.5 group-hover:border-ink transition-colors">
-                  <div class="radio-dot h-2 w-2 rounded-full bg-transparent transition-colors"></div>
-                </div>
-                <div>
-                  <div class="text-xs font-semibold text-ink flex items-center gap-2">
-                    <span>{exp.label}</span>
-                    <span class="rounded bg-surface-raised border border-border px-1.5 py-0.2 font-mono text-[9px] text-mute">
-                      {exp.tag}
-                    </span>
+            {EXPERIENCE_LEVELS.map((exp) => {
+              const expTrans = t.experienceOptions[exp.id] || exp;
+              return (
+                <label class="onboarding-exp-card group flex items-start gap-3 rounded-xl border border-border bg-surface p-3.5 text-left hover:border-ink hover:bg-surface-raised cursor-pointer transition-all select-none">
+                  <input
+                    type="radio"
+                    name="experience"
+                    value={exp.id}
+                    checked={exp.id === 'some'}
+                    class="sr-only"
+                  />
+                  <div class="radio-indicator flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-border mt-0.5 group-hover:border-ink transition-colors">
+                    <div class="radio-dot h-2 w-2 rounded-full bg-transparent transition-colors"></div>
                   </div>
-                  <p class="text-[11px] text-mute mt-0.5 leading-normal">
-                    {exp.description}
-                  </p>
-                </div>
-              </label>
-            ))}
+                  <div>
+                    <div class="text-xs font-semibold text-ink flex items-center gap-2">
+                      <span>{expTrans.label}</span>
+                      <span class="rounded bg-surface-raised border border-border px-1.5 py-0.2 font-mono text-[9px] text-mute">
+                        {expTrans.tag}
+                      </span>
+                    </div>
+                    <p class="text-[11px] text-mute mt-0.5 leading-normal">
+                      {expTrans.description}
+                    </p>
+                  </div>
+                </label>
+              );
+            })}
           </div>
         </div>
 
         <!-- Q3: Previous Testing Experience (Optional) -->
         <div class="space-y-3 border-t border-border pt-6">
           <h2 class="text-sm font-semibold text-ink">
-            3. Previous Testing Experience <span class="text-mute font-normal">(Optional)</span>
+            {t.onboarding.q3Title} <span class="text-mute font-normal">({t.onboarding.q3Optional})</span>
           </h2>
-          <p class="text-xs text-body leading-relaxed">
-            Have you taken a BDSM test before?
-          </p>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {PREVIOUS_TESTING.map((opt) => (
@@ -184,11 +217,8 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
         <!-- Q4: Reason for Taking the Test (Optional) -->
         <div class="space-y-3 border-t border-border pt-6">
           <h2 class="text-sm font-semibold text-ink">
-            4. Reason for Taking the Test <span class="text-mute font-normal">(Optional)</span>
+            {t.onboarding.q4Title} <span class="text-mute font-normal">({t.onboarding.q4Optional})</span>
           </h2>
-          <p class="text-xs text-body leading-relaxed">
-            What brings you to this test?
-          </p>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {TEST_REASONS.map((opt) => (
@@ -208,10 +238,10 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
         <!-- Submit & Navigation Controls -->
         <div class="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <a
-            href="/"
+            href={homeUrl}
             class="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-border bg-surface px-5 py-2.5 text-xs font-medium text-ink hover:bg-surface-raised transition-colors"
           >
-            ← Back to Home
+            ← {t.common.backHome}
           </a>
 
           <button
@@ -219,7 +249,7 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
             id="start-assessment-btn"
             class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-btn-primary px-8 py-3 text-xs font-semibold text-btn-primary-text shadow-xs hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
           >
-            <span>Start Assessment</span>
+            <span>{t.onboarding.startButton}</span>
             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
@@ -249,7 +279,7 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
             class="rounded-full bg-surface-raised border border-border px-2.5 py-0.5 font-mono text-[10px] text-ink hover:border-ink transition-colors cursor-pointer"
             title="Adjust phrasing adaptation"
           >
-            <span id="active-experience-tag">Terminology: Standard</span> ✎
+            <span id="active-experience-tag">{t.onboarding.expModeLabel} {t.experienceOptions.some.tag}</span> ✎
           </button>
         </div>
         <h2 class="text-2xl font-semibold tracking-[-0.8px] text-ink sm:text-3xl mt-1">
@@ -282,7 +312,7 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
     <!-- Progress Indicator Bar -->
     <div class="mb-8">
       <div class="flex items-center justify-between text-xs font-medium text-body mb-2">
-        <span id="question-counter">Question 1 of {testQuestions.length}</span>
+        <span id="question-counter">{t.questionnaire.questionLabel} 1 {t.questionnaire.of} {testQuestions.length}</span>
         <span id="progress-percent" class="font-mono text-xs text-ink font-semibold">0% Completed</span>
       </div>
       <div class="h-2 w-full overflow-hidden rounded-full bg-surface-raised border border-border">
@@ -314,7 +344,7 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
         id="question-text"
         class="min-h-[72px] text-lg font-semibold leading-relaxed tracking-[-0.4px] text-ink sm:text-2xl sm:leading-snug"
       >
-        Loading question...
+        {t.common.loading}
       </h3>
 
       <!-- Context Note / Definition Banner (Shown for beginners & exploring users) -->
@@ -330,7 +360,7 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
 
       <!-- Likert Options -->
       <div class="mt-8 space-y-3" id="options-container" role="radiogroup" aria-label="Likert Options">
-        {LIKERT_OPTIONS.map((opt, index) => (
+        {localizedLikertOptions.map((opt, index) => (
           <button
             type="button"
             data-value={opt.value}
@@ -350,53 +380,38 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
                 </div>
               </div>
             </div>
-            <div class="radio-indicator flex h-5 w-5 items-center justify-center rounded-full border border-border transition-colors group-hover:border-ink">
-              <div class="radio-dot h-2.5 w-2.5 rounded-full bg-transparent transition-colors"></div>
+            <div class="option-check flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border opacity-0 group-hover:opacity-100 transition-opacity">
+              <div class="h-2 w-2 rounded-full bg-ink"></div>
             </div>
           </button>
         ))}
       </div>
 
-      <!-- Navigation & Action Buttons -->
+      <!-- Card Navigation Controls -->
       <div class="mt-8 flex items-center justify-between border-t border-border pt-6">
         <button
           id="prev-btn"
           type="button"
-          class="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-4 py-2 text-xs font-medium text-ink hover:bg-surface-raised disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+          disabled
+          class="rounded-full border border-border bg-surface px-4 py-2 text-xs font-medium text-body hover:bg-surface-raised hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
-          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-          Previous
+          {t.questionnaire.previousBtn}
         </button>
 
         <div class="flex items-center gap-2">
-          <button
-            id="skip-btn"
-            type="button"
-            class="rounded-full px-3 py-2 text-xs font-medium text-mute hover:text-ink hover:bg-surface-raised transition-colors cursor-pointer"
-          >
-            Skip (Neutral)
-          </button>
           <button
             id="next-btn"
             type="button"
             class="inline-flex items-center gap-1.5 rounded-full bg-btn-primary px-5 py-2 text-xs font-medium text-btn-primary-text hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer shadow-xs"
           >
-            <span>Next</span>
-            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
+            <span>{t.questionnaire.nextBtn}</span>
           </button>
           <button
             id="finish-btn"
             type="button"
             class="hidden inline-flex items-center gap-2 rounded-full bg-btn-primary px-6 py-2.5 text-xs font-semibold text-btn-primary-text shadow-xs hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
           >
-            <span>View Detailed Results</span>
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
+            <span>{t.questionnaire.finishBtn}</span>
           </button>
         </div>
       </div>
@@ -433,23 +448,30 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
 
 <script>
   import { calculateScores, encodeScores } from '../utils/scoring';
-  import { getQuestionContent, type Question } from '../data/questions';
+  import type { Question } from '../data/questions';
   import type { OnboardingState } from '../data/onboarding';
 
+  // Client-Side Runner
   const container = document.querySelector('[data-test-mode]') as HTMLElement;
   if (container) {
-    const mode = container.dataset.testMode as 'quick' | 'comprehensive';
-    const rawQuestions = container.dataset.questions;
-    const questions: Question[] = rawQuestions ? JSON.parse(rawQuestions) : [];
+    const mode = container.getAttribute('data-test-mode') as 'quick' | 'comprehensive';
+    const resultsUrl = container.getAttribute('data-results-url') || '/results';
+    const confirmResetMsg = container.getAttribute('data-confirm-reset') || 'Are you sure you want to reset?';
+    const qLabel = container.getAttribute('data-q-label') || 'Question';
+    const qOf = container.getAttribute('data-q-of') || 'of';
+    const categoryTranslations: Record<string, string> = JSON.parse(container.getAttribute('data-category-translations') || '{}');
+    const questions: Question[] = JSON.parse(container.getAttribute('data-questions') || '[]');
 
     const storageAnswersKey = `bdsm_test_answers_${mode}`;
     const storageOnboardingKey = `bdsm_onboarding_${mode}`;
-    const autoAdvanceKey = 'bdsm_test_auto_advance';
+    const autoAdvanceKey = 'bdsm_auto_advance';
 
     // State
     let currentIndex = 0;
     let answers: Record<number, number> = {};
     let autoAdvance = localStorage.getItem(autoAdvanceKey) !== 'false';
+
+    // Onboarding State
     let onboarding: OnboardingState = {
       ageGroup: '',
       ageConfirmed: false,
@@ -458,155 +480,147 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
       reason: ''
     };
 
+    // Load saved answers
+    try {
+      const saved = localStorage.getItem(storageAnswersKey);
+      if (saved) {
+        answers = JSON.parse(saved);
+      }
+    } catch (e) {}
+
     // Load saved onboarding state
     try {
       const savedOnboarding = localStorage.getItem(storageOnboardingKey);
       if (savedOnboarding) {
-        onboarding = JSON.parse(savedOnboarding);
+        onboarding = { ...onboarding, ...JSON.parse(savedOnboarding) };
       }
     } catch (e) {}
 
-    // Load saved answers
-    try {
-      const savedAnswers = localStorage.getItem(storageAnswersKey);
-      if (savedAnswers) {
-        answers = JSON.parse(savedAnswers);
-      }
-    } catch (e) {}
-
-    // Elements
+    // DOM Elements - Onboarding
     const onboardingScreen = document.getElementById('onboarding-screen');
-    const questionnaireView = document.getElementById('questionnaire-view');
     const onboardingForm = document.getElementById('onboarding-form') as HTMLFormElement;
     const ageConfirmCheckbox = document.getElementById('age-confirm-checkbox') as HTMLInputElement;
-    const ageConfirmError = document.getElementById('age-confirm-error');
     const ageConfirmContainer = document.getElementById('age-confirm-container');
-    const editExperienceBtn = document.getElementById('edit-experience-btn');
-    const activeExperienceTag = document.getElementById('active-experience-tag');
+    const ageConfirmError = document.getElementById('age-confirm-error');
 
-    const qCounter = document.getElementById('question-counter');
-    const qCategory = document.getElementById('question-category');
-    const qText = document.getElementById('question-text');
-    const qContextNote = document.getElementById('question-context-note');
-    const qContextText = document.getElementById('question-context-text');
-    const progressBarFill = document.getElementById('progress-bar-fill');
+    // DOM Elements - Questionnaire
+    const questionnaireView = document.getElementById('questionnaire-view');
+    const questionCounter = document.getElementById('question-counter');
     const progressPercent = document.getElementById('progress-percent');
-    const answeredCount = document.getElementById('answered-count');
+    const progressBarFill = document.getElementById('progress-bar-fill');
+    const questionCategory = document.getElementById('question-category');
+    const questionText = document.getElementById('question-text');
+    const questionContextNote = document.getElementById('question-context-note');
+    const questionContextText = document.getElementById('question-context-text');
+    const options = document.querySelectorAll('.likert-option');
     const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
     const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
     const finishBtn = document.getElementById('finish-btn') as HTMLButtonElement;
-    const skipBtn = document.getElementById('skip-btn') as HTMLButtonElement;
-    const resetBtn = document.getElementById('reset-test-btn') as HTMLButtonElement;
-    const autoAdvanceToggle = document.getElementById('auto-advance-toggle') as HTMLInputElement;
-    const options = document.querySelectorAll('.likert-option');
+    const answeredCount = document.getElementById('answered-count');
     const jumpDots = document.querySelectorAll('.jump-dot');
+    const autoAdvanceToggle = document.getElementById('auto-advance-toggle') as HTMLInputElement;
+    const resetBtn = document.getElementById('reset-test-btn');
+    const editExperienceBtn = document.getElementById('edit-experience-btn');
+    const activeExperienceTag = document.getElementById('active-experience-tag');
 
-    // Sync onboarding pill selections styling
-    function setupRadioPills() {
-      const allPills = document.querySelectorAll('.onboarding-pill, .onboarding-exp-card');
-      allPills.forEach((pill) => {
-        const input = pill.querySelector('input[type="radio"]') as HTMLInputElement;
-        if (!input) return;
+    // Initialize Onboarding Form values
+    if (onboardingScreen && onboardingForm) {
+      if (onboarding.ageConfirmed && ageConfirmCheckbox) {
+        ageConfirmCheckbox.checked = true;
+      }
+      if (onboarding.ageGroup) {
+        const rad = onboardingForm.querySelector(`input[name="ageGroup"][value="${onboarding.ageGroup}"]`) as HTMLInputElement;
+        if (rad) {
+          rad.checked = true;
+          rad.closest('.onboarding-pill')?.classList.add('border-ink', 'bg-surface-raised', 'font-medium');
+        }
+      }
+      if (onboarding.experience) {
+        const rad = onboardingForm.querySelector(`input[name="experience"][value="${onboarding.experience}"]`) as HTMLInputElement;
+        if (rad) {
+          rad.checked = true;
+          updateExperienceCardStyles(rad);
+        }
+      }
+      if (onboarding.previousTests) {
+        const rad = onboardingForm.querySelector(`input[name="previousTests"][value="${onboarding.previousTests}"]`) as HTMLInputElement;
+        if (rad) {
+          rad.checked = true;
+          rad.closest('.onboarding-pill')?.classList.add('border-ink', 'bg-surface-raised', 'font-medium');
+        }
+      }
+      if (onboarding.reason) {
+        const rad = onboardingForm.querySelector(`input[name="reason"][value="${onboarding.reason}"]`) as HTMLInputElement;
+        if (rad) {
+          rad.checked = true;
+          rad.closest('.onboarding-pill')?.classList.add('border-ink', 'bg-surface-raised', 'font-medium');
+        }
+      }
 
-        pill.addEventListener('click', () => {
-          const name = input.name;
-          document.querySelectorAll(`input[name="${name}"]`).forEach((otherInput) => {
-            const otherPill = otherInput.closest('.onboarding-pill, .onboarding-exp-card');
-            const dot = otherPill?.querySelector('.radio-dot');
-            const indicator = otherPill?.querySelector('.radio-indicator');
-            otherPill?.classList.remove('border-ink', 'bg-surface-raised');
-            otherPill?.classList.add('border-border', 'bg-surface');
-            dot?.classList.remove('bg-ink');
-            indicator?.classList.remove('border-ink');
+      // Pill click styling
+      onboardingForm.querySelectorAll('.onboarding-pill input[type="radio"]').forEach((input) => {
+        input.addEventListener('change', (e) => {
+          const target = e.target as HTMLInputElement;
+          const groupName = target.name;
+          onboardingForm.querySelectorAll(`input[name="${groupName}"]`).forEach((sibling) => {
+            sibling.closest('.onboarding-pill')?.classList.remove('border-ink', 'bg-surface-raised', 'font-medium');
           });
-
-          input.checked = true;
-          pill.classList.add('border-ink', 'bg-surface-raised');
-          pill.classList.remove('border-border', 'bg-surface');
-          const activeDot = pill.querySelector('.radio-dot');
-          const activeIndicator = pill.querySelector('.radio-indicator');
-          activeDot?.classList.add('bg-ink');
-          activeIndicator?.classList.add('border-ink');
+          target.closest('.onboarding-pill')?.classList.add('border-ink', 'bg-surface-raised', 'font-medium');
         });
       });
-    }
-    setupRadioPills();
 
-    // Populate existing onboarding values if stored
-    if (onboarding.ageConfirmed && ageConfirmCheckbox) {
-      ageConfirmCheckbox.checked = true;
-    }
-    if (onboarding.experience) {
-      const expRadio = document.querySelector(`input[name="experience"][value="${onboarding.experience}"]`) as HTMLInputElement;
-      if (expRadio) {
-        expRadio.checked = true;
-        const pill = expRadio.closest('.onboarding-exp-card');
-        pill?.classList.add('border-ink', 'bg-surface-raised');
-        pill?.querySelector('.radio-dot')?.classList.add('bg-ink');
-        pill?.querySelector('.radio-indicator')?.classList.add('border-ink');
-      }
-    }
-    if (onboarding.ageGroup) {
-      const ageRadio = document.querySelector(`input[name="ageGroup"][value="${onboarding.ageGroup}"]`) as HTMLInputElement;
-      if (ageRadio) {
-        ageRadio.checked = true;
-        ageRadio.closest('.onboarding-pill')?.classList.add('border-ink', 'bg-surface-raised');
-      }
-    }
-    if (onboarding.previousTests) {
-      const testRadio = document.querySelector(`input[name="previousTests"][value="${onboarding.previousTests}"]`) as HTMLInputElement;
-      if (testRadio) {
-        testRadio.checked = true;
-        testRadio.closest('.onboarding-pill')?.classList.add('border-ink', 'bg-surface-raised');
-      }
-    }
-    if (onboarding.reason) {
-      const reasonRadio = document.querySelector(`input[name="reason"][value="${onboarding.reason}"]`) as HTMLInputElement;
-      if (reasonRadio) {
-        reasonRadio.checked = true;
-        reasonRadio.closest('.onboarding-pill')?.classList.add('border-ink', 'bg-surface-raised');
-      }
-    }
+      // Experience card radio styling
+      onboardingForm.querySelectorAll('.onboarding-exp-card input[type="radio"]').forEach((input) => {
+        input.addEventListener('change', (e) => {
+          updateExperienceCardStyles(e.target as HTMLInputElement);
+        });
+      });
 
-    // Handle Onboarding submission
-    if (onboardingForm) {
+      function updateExperienceCardStyles(activeInput: HTMLInputElement) {
+        onboardingForm.querySelectorAll('.onboarding-exp-card').forEach((card) => {
+          card.classList.remove('border-ink', 'bg-surface-raised');
+          const dot = card.querySelector('.radio-dot');
+          dot?.classList.remove('bg-ink');
+          dot?.classList.add('bg-transparent');
+        });
+        const activeCard = activeInput.closest('.onboarding-exp-card');
+        activeCard?.classList.add('border-ink', 'bg-surface-raised');
+        const activeDot = activeCard?.querySelector('.radio-dot');
+        activeDot?.classList.remove('bg-transparent');
+        activeDot?.classList.add('bg-ink');
+      }
+
+      // Form submission validation
       onboardingForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        // 18+ confirmation is MANDATORY
+        // 18+ Confirmation Gate
         if (!ageConfirmCheckbox.checked) {
-          if (ageConfirmError) ageConfirmError.classList.remove('hidden');
-          if (ageConfirmContainer) {
-            ageConfirmContainer.classList.add('border-error');
-            ageConfirmContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
+          ageConfirmContainer?.classList.add('border-error');
+          ageConfirmError?.classList.remove('hidden');
+          ageConfirmCheckbox.focus();
           return;
         }
 
-        if (ageConfirmError) ageConfirmError.classList.add('hidden');
-        if (ageConfirmContainer) ageConfirmContainer.classList.remove('border-error');
+        ageConfirmContainer?.classList.remove('border-error');
+        ageConfirmError?.classList.add('hidden');
 
-        // Read form values
+        // Collect answers
         const formData = new FormData(onboardingForm);
-        onboarding = {
-          ageConfirmed: true,
-          ageGroup: (formData.get('ageGroup') as string) || '',
-          experience: ((formData.get('experience') as any) || 'some'),
-          previousTests: (formData.get('previousTests') as string) || '',
-          reason: (formData.get('reason') as string) || ''
-        };
+        onboarding.ageConfirmed = true;
+        onboarding.ageGroup = (formData.get('ageGroup') as string) || '';
+        onboarding.experience = (formData.get('experience') as any) || 'some';
+        onboarding.previousTests = (formData.get('previousTests') as string) || '';
+        onboarding.reason = (formData.get('reason') as string) || '';
 
-        // Save onboarding state
         try {
           localStorage.setItem(storageOnboardingKey, JSON.stringify(onboarding));
         } catch (err) {}
 
-        // Transition from Onboarding to Questionnaire
         startQuestionnaire();
       });
     }
 
-    // Toggle back to onboarding to edit experience
     if (editExperienceBtn) {
       editExperienceBtn.addEventListener('click', () => {
         questionnaireView?.classList.add('hidden');
@@ -617,14 +631,7 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
 
     function updateExperienceTag() {
       if (!activeExperienceTag) return;
-      const tagMap: Record<string, string> = {
-        new: 'Terminology: Beginner',
-        exploring: 'Terminology: Exploring',
-        some: 'Terminology: Intermediate',
-        experienced: 'Terminology: Experienced',
-        unspecified: 'Terminology: Standard'
-      };
-      activeExperienceTag.textContent = tagMap[onboarding.experience] || 'Terminology: Standard';
+      activeExperienceTag.textContent = `Mode: ${onboarding.experience.toUpperCase()}`;
     }
 
     function startQuestionnaire() {
@@ -657,63 +664,95 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
       } catch (e) {}
     }
 
+    function getQuestionContent(q: Question, experience: string): { text: string; note?: string } {
+      if (experience === 'new') {
+        return {
+          text: q.adaptations?.beginnerText || q.text,
+          note: q.adaptations?.beginnerNote
+        };
+      }
+      if (experience === 'exploring') {
+        return {
+          text: q.adaptations?.exploringText || q.text,
+          note: q.adaptations?.exploringNote || q.adaptations?.beginnerNote
+        };
+      }
+      if (experience === 'experienced') {
+        return {
+          text: q.adaptations?.experiencedText || q.text
+        };
+      }
+      return { text: q.text };
+    }
+
     function renderQuestion() {
       const q = questions[currentIndex];
       if (!q) return;
 
-      if (qCounter) qCounter.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
-      if (qCategory) qCategory.textContent = q.category;
-
-      // Adapt terminology based on experience
-      const content = getQuestionContent(q, onboarding.experience);
-      if (qText) qText.textContent = content.text;
-
-      // Display context note if provided
-      if (content.note && (onboarding.experience === 'new' || onboarding.experience === 'exploring')) {
-        if (qContextText) qContextText.textContent = content.note;
-        if (qContextNote) qContextNote.classList.remove('hidden');
-      } else {
-        if (qContextNote) qContextNote.classList.add('hidden');
+      // Question Category with localization
+      if (questionCategory) {
+        questionCategory.textContent = categoryTranslations[q.category] || q.category;
       }
 
-      // Update progress
-      const answeredTotal = Object.keys(answers).length;
-      const pct = Math.round((answeredTotal / questions.length) * 100);
-      if (progressBarFill) progressBarFill.style.width = `${pct}%`;
-      if (progressPercent) progressPercent.textContent = `${pct}% Completed`;
-      if (answeredCount) answeredCount.textContent = `${answeredTotal} of ${questions.length} answered`;
+      // Adaptive Question Text
+      const adapted = getQuestionContent(q, onboarding.experience);
+      if (questionText) {
+        questionText.textContent = adapted.text;
+      }
 
-      // Update active option styling
-      const currentAns = answers[q.id];
+      // Context note
+      if (questionContextNote && questionContextText) {
+        if (adapted.note) {
+          questionContextText.textContent = adapted.note;
+          questionContextNote.classList.remove('hidden');
+        } else {
+          questionContextNote.classList.add('hidden');
+        }
+      }
+
+      // Counter & Progress
+      if (questionCounter) {
+        questionCounter.textContent = `${qLabel} ${currentIndex + 1} ${qOf} ${questions.length}`;
+      }
+
+      const totalAnswered = Object.keys(answers).length;
+      const pct = Math.round((totalAnswered / questions.length) * 100);
+      if (progressPercent) {
+        progressPercent.textContent = `${pct}%`;
+      }
+      if (progressBarFill) {
+        progressBarFill.style.width = `${pct}%`;
+      }
+      if (answeredCount) {
+        answeredCount.textContent = `${totalAnswered} / ${questions.length}`;
+      }
+
+      // Selected option highlight
+      const currentVal = answers[q.id];
       options.forEach((opt) => {
         const val = Number(opt.getAttribute('data-value'));
-        const indicatorDot = opt.querySelector('.radio-dot');
-        const indicator = opt.querySelector('.radio-indicator');
-
-        if (currentAns !== undefined && currentAns === val) {
-          opt.classList.add('border-ink', 'bg-surface-raised');
-          opt.classList.remove('border-border');
-          if (indicatorDot) indicatorDot.classList.add('bg-ink');
-          if (indicator) indicator.classList.add('border-ink');
+        const check = opt.querySelector('.option-check');
+        if (currentVal !== undefined && currentVal === val) {
+          opt.classList.add('border-ink', 'bg-surface-raised', 'ring-1', 'ring-ink');
+          check?.classList.remove('opacity-0');
+          check?.classList.add('opacity-100');
         } else {
-          opt.classList.remove('border-ink', 'bg-surface-raised');
-          opt.classList.add('border-border');
-          if (indicatorDot) indicatorDot.classList.remove('bg-ink');
-          if (indicator) indicator.classList.remove('border-ink');
+          opt.classList.remove('border-ink', 'bg-surface-raised', 'ring-1', 'ring-ink');
+          check?.classList.remove('opacity-100');
+          check?.classList.add('opacity-0');
         }
       });
 
-      // Update jump dots
+      // Jump dots
       jumpDots.forEach((dot, idx) => {
-        const dotQ = questions[idx];
-        const isAnswered = dotQ && answers[dotQ.id] !== undefined;
+        const qId = questions[idx]?.id;
+        const isAnswered = qId !== undefined && answers[qId] !== undefined;
         const isCurrent = idx === currentIndex;
 
-        dot.classList.remove('bg-btn-primary', 'text-btn-primary-text', 'border-btn-primary', 'ring-1', 'ring-ink', 'border-ink');
-        dot.classList.add('border-border', 'text-mute');
+        dot.classList.remove('ring-2', 'ring-ink', 'font-semibold', 'bg-btn-primary', 'text-btn-primary-text', 'border-btn-primary');
 
         if (isCurrent) {
-          dot.classList.add('border-ink', 'ring-1', 'ring-ink');
+          dot.classList.add('ring-2', 'ring-ink', 'font-semibold');
         }
 
         if (isAnswered) {
@@ -722,12 +761,10 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
         }
       });
 
-      // Previous button state
       if (prevBtn) {
         prevBtn.disabled = currentIndex === 0;
       }
 
-      // Last question check
       const isLast = currentIndex === questions.length - 1;
       const allAnswered = Object.keys(answers).length >= questions.length;
 
@@ -761,16 +798,12 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
     }
 
     function completeTest() {
-      // Calculate scores client-side (uninfluenced by onboarding data)
       const scores = calculateScores(answers, questions as any);
       const encoded = encodeScores(scores);
-      // Save latest completion
       localStorage.setItem('bdsm_latest_results', JSON.stringify({ mode, scores, date: new Date().toISOString() }));
-      // Redirect to results
-      window.location.href = `/results?data=${encoded}&mode=${mode}`;
+      window.location.href = `${resultsUrl}?data=${encoded}&mode=${mode}`;
     }
 
-    // Attach option clicks
     options.forEach((opt) => {
       opt.addEventListener('click', () => {
         const val = Number(opt.getAttribute('data-value'));
@@ -778,7 +811,6 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
       });
     });
 
-    // Attach prev / next / skip
     if (prevBtn) {
       prevBtn.addEventListener('click', () => {
         if (currentIndex > 0) {
@@ -797,29 +829,12 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
       });
     }
 
-    if (skipBtn) {
-      skipBtn.addEventListener('click', () => {
-        const q = questions[currentIndex];
-        if (q && answers[q.id] === undefined) {
-          answers[q.id] = 50; // Neutral default
-          saveAnswers();
-        }
-        if (currentIndex < questions.length - 1) {
-          currentIndex++;
-          renderQuestion();
-        } else {
-          completeTest();
-        }
-      });
-    }
-
     if (finishBtn) {
       finishBtn.addEventListener('click', () => {
         completeTest();
       });
     }
 
-    // Attach jump dots
     jumpDots.forEach((dot) => {
       dot.addEventListener('click', () => {
         const jumpIdx = Number(dot.getAttribute('data-jump-index'));
@@ -830,10 +845,9 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
       });
     });
 
-    // Reset button
     if (resetBtn) {
       resetBtn.addEventListener('click', () => {
-        if (confirm('Are you sure you want to reset your answers and start over?')) {
+        if (confirm(confirmResetMsg)) {
           answers = {};
           currentIndex = 0;
           localStorage.removeItem(storageAnswersKey);
@@ -842,9 +856,7 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
       });
     }
 
-    // Keyboard shortcuts (1-5, left/right arrows, enter)
     window.addEventListener('keydown', (e) => {
-      // Only process when questionnaire view is active
       if (questionnaireView?.classList.contains('hidden')) return;
 
       if (['1', '2', '3', '4', '5'].includes(e.key)) {
@@ -867,7 +879,6 @@ const estimatedTime = mode === 'quick' ? '3–4 minutes' : '8–12 minutes';
       }
     });
 
-    // Find first unanswered question on start
     for (let i = 0; i < questions.length; i++) {
       if (answers[questions[i].id] === undefined) {
         currentIndex = i;

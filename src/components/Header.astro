@@ -1,24 +1,38 @@
 ---
+import {
+  SUPPORTED_LANGUAGES,
+  getLanguageFromPath,
+  getLocalizedPath,
+  type SupportedLanguage
+} from '../i18n/languages';
+import { getTranslations } from '../i18n/ui';
+
 interface Props {
   activePath?: string;
+  lang?: SupportedLanguage;
 }
 
 const { activePath = '/' } = Astro.props;
+const currentLang: SupportedLanguage = Astro.props.lang || getLanguageFromPath(activePath || Astro.url.pathname);
+const t = getTranslations(currentLang);
+const currentLangConfig = SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
-const navItems = [
-  { label: 'Home', href: '/' },
-  { label: 'Quick Test', href: '/test/quick' },
-  { label: 'Comprehensive Test', href: '/test/comprehensive' },
-  { label: 'Dimensions', href: '/dimensions' },
-  { label: 'Partner Compare', href: '/compare' },
-  { label: 'About', href: '/about' },
+const navDefinitions = [
+  { label: t.nav.home, path: '/' },
+  { label: t.nav.quickTest, path: '/test/quick' },
+  { label: t.nav.comprehensiveTest, path: '/test/comprehensive' },
+  { label: t.nav.dimensions, path: '/dimensions' },
+  { label: t.nav.compare, path: '/compare' },
+  { label: t.nav.about, path: '/about' },
 ];
+
+const homeUrl = getLocalizedPath(currentLang, '/');
 ---
 
 <header class="sticky top-0 z-40 w-full border-b border-border bg-canvas/90 backdrop-blur-md transition-colors">
   <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
     <!-- Brand Logo -->
-    <a href="/" class="group flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-link">
+    <a href={homeUrl} class="group flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-link">
       <div class="flex h-8 w-8 items-center justify-center rounded-md bg-btn-primary text-btn-primary-text font-mono text-xs font-semibold tracking-wider transition-transform group-hover:scale-105">
         BT
       </div>
@@ -30,11 +44,12 @@ const navItems = [
 
     <!-- Desktop Navigation -->
     <nav class="hidden md:flex items-center gap-1">
-      {navItems.map((item) => {
-        const isActive = activePath === item.href;
+      {navDefinitions.map((item) => {
+        const itemUrl = getLocalizedPath(currentLang, item.path);
+        const isActive = activePath === itemUrl || (item.path === '/' && activePath === homeUrl);
         return (
           <a
-            href={item.href}
+            href={itemUrl}
             class:list={[
               'rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-link',
               isActive
@@ -48,8 +63,53 @@ const navItems = [
       })}
     </nav>
 
-    <!-- Header Actions (Desktop: Theme Toggle) -->
-    <div class="hidden md:flex items-center gap-3">
+    <!-- Header Actions (Desktop: Language Selector + Theme Toggle) -->
+    <div class="hidden md:flex items-center gap-2.5">
+      <!-- Language Selector Dropdown -->
+      <div class="relative inline-block text-left" id="desktop-lang-dropdown">
+        <button
+          type="button"
+          id="desktop-lang-btn"
+          aria-haspopup="true"
+          aria-expanded="false"
+          class="flex h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-xs font-medium text-ink hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-link cursor-pointer"
+          title={t.header.selectLanguage}
+        >
+          <svg class="h-3.5 w-3.5 text-mute" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+          </svg>
+          <span>{currentLangConfig.nativeName}</span>
+          <svg class="h-3 w-3 text-mute" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <div
+          id="desktop-lang-menu"
+          class="hidden absolute right-0 mt-2 w-44 rounded-xl border border-border bg-surface py-1.5 shadow-lg z-50 transition-all"
+        >
+          {SUPPORTED_LANGUAGES.map((langOption) => {
+            const targetUrl = getLocalizedPath(langOption.code as SupportedLanguage, activePath);
+            const isSelected = langOption.code === currentLang;
+            return (
+              <a
+                href={targetUrl}
+                class:list={[
+                  'flex items-center justify-between px-3.5 py-2 text-xs transition-colors',
+                  isSelected
+                    ? 'bg-surface-raised font-semibold text-ink'
+                    : 'text-body hover:bg-surface-raised hover:text-ink'
+                ]}
+              >
+                <span>{langOption.nativeName}</span>
+                <span class="font-mono text-[10px] text-mute uppercase">{langOption.code}</span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      <!-- Theme Toggle Button -->
       <button
         type="button"
         class="theme-toggle-btn flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-ink hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-link cursor-pointer"
@@ -65,8 +125,49 @@ const navItems = [
       </button>
     </div>
 
-    <!-- Mobile Header Actions (Toggle + Hamburger) -->
-    <div class="flex items-center gap-2 md:hidden">
+    <!-- Mobile Header Actions (Language Select + Theme Toggle + Hamburger) -->
+    <div class="flex items-center gap-1.5 md:hidden">
+      <!-- Mobile Language Selector Button -->
+      <div class="relative" id="mobile-lang-dropdown">
+        <button
+          type="button"
+          id="mobile-lang-btn"
+          aria-label={t.header.selectLanguage}
+          aria-expanded="false"
+          class="flex h-9 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-xs font-mono font-medium text-ink hover:bg-surface-raised cursor-pointer"
+        >
+          <svg class="h-3.5 w-3.5 text-mute" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+          </svg>
+          <span class="uppercase">{currentLang}</span>
+        </button>
+
+        <div
+          id="mobile-lang-menu"
+          class="hidden absolute right-0 mt-2 w-44 rounded-xl border border-border bg-surface py-1.5 shadow-lg z-50"
+        >
+          {SUPPORTED_LANGUAGES.map((langOption) => {
+            const targetUrl = getLocalizedPath(langOption.code as SupportedLanguage, activePath);
+            const isSelected = langOption.code === currentLang;
+            return (
+              <a
+                href={targetUrl}
+                class:list={[
+                  'flex items-center justify-between px-3.5 py-2 text-xs transition-colors',
+                  isSelected
+                    ? 'bg-surface-raised font-semibold text-ink'
+                    : 'text-body hover:bg-surface-raised hover:text-ink'
+                ]}
+              >
+                <span>{langOption.nativeName}</span>
+                <span class="font-mono text-[10px] text-mute uppercase">{langOption.code}</span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      <!-- Theme Toggle -->
       <button
         type="button"
         class="theme-toggle-btn flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-ink hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-link cursor-pointer"
@@ -81,10 +182,11 @@ const navItems = [
         </svg>
       </button>
 
+      <!-- Mobile Hamburger Button -->
       <button
         id="mobile-menu-btn"
         type="button"
-        aria-label="Toggle Navigation Menu"
+        aria-label={t.header.menu}
         aria-expanded="false"
         class="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-ink hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-link cursor-pointer"
       >
@@ -101,11 +203,12 @@ const navItems = [
   <!-- Mobile Drawer Menu -->
   <div id="mobile-menu" class="hidden border-b border-border bg-surface px-4 py-4 md:hidden">
     <div class="flex flex-col gap-1.5">
-      {navItems.map((item) => {
-        const isActive = activePath === item.href;
+      {navDefinitions.map((item) => {
+        const itemUrl = getLocalizedPath(currentLang, item.path);
+        const isActive = activePath === itemUrl || (item.path === '/' && activePath === homeUrl);
         return (
           <a
-            href={item.href}
+            href={itemUrl}
             class:list={[
               'rounded-md px-3 py-2 text-sm font-medium transition-colors',
               isActive
@@ -135,6 +238,46 @@ const navItems = [
       menu.classList.toggle('hidden');
       hamburger.classList.toggle('hidden');
       closeIcon.classList.toggle('hidden');
+    });
+  }
+
+  // Language Dropdown Logic (Desktop)
+  const deskLangBtn = document.getElementById('desktop-lang-btn');
+  const deskLangMenu = document.getElementById('desktop-lang-menu');
+
+  if (deskLangBtn && deskLangMenu) {
+    deskLangBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isHidden = deskLangMenu.classList.contains('hidden');
+      deskLangMenu.classList.toggle('hidden');
+      deskLangBtn.setAttribute('aria-expanded', String(isHidden));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!deskLangMenu.contains(e.target as Node) && e.target !== deskLangBtn) {
+        deskLangMenu.classList.add('hidden');
+        deskLangBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  // Language Dropdown Logic (Mobile)
+  const mobLangBtn = document.getElementById('mobile-lang-btn');
+  const mobLangMenu = document.getElementById('mobile-lang-menu');
+
+  if (mobLangBtn && mobLangMenu) {
+    mobLangBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isHidden = mobLangMenu.classList.contains('hidden');
+      mobLangMenu.classList.toggle('hidden');
+      mobLangBtn.setAttribute('aria-expanded', String(isHidden));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!mobLangMenu.contains(e.target as Node) && e.target !== mobLangBtn) {
+        mobLangMenu.classList.add('hidden');
+        mobLangBtn.setAttribute('aria-expanded', 'false');
+      }
     });
   }
 

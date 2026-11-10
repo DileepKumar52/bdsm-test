@@ -1,18 +1,5 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Header from '../../components/Header.astro';
-import Footer from '../../components/Footer.astro';
-import Questionnaire from '../../components/Questionnaire.astro';
+import TestPage from '../../components/pages/TestPage.astro';
 ---
 
-<Layout
-  title="Comprehensive BDSM Test (64 Questions) — In-Depth Kink Assessment"
-  description="Complete the comprehensive BDSM test online for a deep assessment of 20 distinct categories, protocol preferences, psychological roles, and sensation thresholds."
-  canonicalPath="/test/comprehensive"
->
-  <Header activePath="/test/comprehensive" />
-  <main class="flex-1">
-    <Questionnaire mode="comprehensive" />
-  </main>
-  <Footer />
-</Layout>
+<TestPage mode="comprehensive" lang="en" />

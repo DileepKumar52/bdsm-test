@@ -1,0 +1,432 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../Header.astro';
+import Footer from '../Footer.astro';
+import { getLocalizedDimensions } from '../../i18n/dimensions';
+import { getComparePageContent } from '../../i18n/pages/compare';
+import { getLocalizedPath, type SupportedLanguage } from '../../i18n/languages';
+
+interface Props {
+  lang: SupportedLanguage;
+}
+
+const { lang } = Astro.props;
+const content = getComparePageContent(lang);
+const dimensions = getLocalizedDimensions(lang);
+const currentPath = getLocalizedPath(lang, '/compare');
+---
+
+<Layout
+  title={content.meta.title}
+  description={content.meta.description}
+  canonicalPath={currentPath}
+  lang={lang}
+>
+  <Header activePath={currentPath} lang={lang} />
+
+  <main class="flex-1 py-10 md:py-16" id="compare-page" data-dimensions={JSON.stringify(dimensions)} data-lang={lang}>
+    <div class="pointer-events-none absolute inset-x-0 top-16 h-80 hero-mesh"></div>
+
+    <div class="relative mx-auto max-w-5xl px-4 sm:px-6">
+      <!-- Header -->
+      <div class="mb-10 text-center">
+        <span class="rounded-full border border-border bg-surface px-3 py-1 font-mono text-xs uppercase tracking-wider text-mute shadow-xs">
+          {content.header.eyebrow}
+        </span>
+        <h1 class="mt-3 text-3xl sm:text-4xl font-semibold tracking-[-1.2px] text-ink">
+          {content.header.h1}
+        </h1>
+        <p class="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-body">
+          {content.header.subtitle}
+        </p>
+      </div>
+
+      <!-- Sync Setup Card -->
+      <div class="mb-12 rounded-2xl border border-border bg-surface p-6 md:p-8 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Profile A (You) -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label for="profile-a-input" class="text-xs font-semibold uppercase tracking-wider text-ink">
+                {content.setup.profileATitle}
+              </label>
+              <button
+                id="load-my-saved-btn"
+                type="button"
+                class="text-[11px] text-link hover:underline cursor-pointer"
+              >
+                {content.setup.profileALoadBtn}
+              </button>
+            </div>
+            <textarea
+              id="profile-a-input"
+              rows="3"
+              placeholder={content.setup.profileAPlaceholder}
+              class="w-full rounded-xl border border-border bg-surface-raised p-3 text-xs font-mono text-ink placeholder:text-mute focus:border-ink focus:bg-surface focus:outline-none transition-colors"
+            ></textarea>
+            <div id="profile-a-status" class="text-[11px] text-mute">{content.setup.profileAStatusEmpty}</div>
+          </div>
+
+          <!-- Profile B (Partner) -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label for="profile-b-input" class="text-xs font-semibold uppercase tracking-wider text-ink">
+                {content.setup.profileBTitle}
+              </label>
+              <a href={getLocalizedPath(lang, '/test/quick')} target="_blank" class="text-[11px] text-link hover:underline">
+                Send Partner Test Link ↗
+              </a>
+            </div>
+            <textarea
+              id="profile-b-input"
+              rows="3"
+              placeholder={content.setup.profileBPlaceholder}
+              class="w-full rounded-xl border border-border bg-surface-raised p-3 text-xs font-mono text-ink placeholder:text-mute focus:border-ink focus:bg-surface focus:outline-none transition-colors"
+            ></textarea>
+            <div id="profile-b-status" class="text-[11px] text-mute">{content.setup.profileBStatusEmpty}</div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-center border-t border-border pt-6">
+          <button
+            id="compare-calculate-btn"
+            type="button"
+            class="inline-flex items-center gap-2 rounded-full bg-btn-primary px-6 py-2.5 text-xs font-semibold text-btn-primary-text shadow-xs hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+          >
+            {content.setup.compareBtn}
+          </button>
+        </div>
+      </div>
+
+      <!-- Results View Container (Initially Hidden until calculated) -->
+      <div id="comparison-results" class="hidden space-y-10">
+        <!-- Overall Synergy Hero -->
+        <div class="rounded-2xl border border-border bg-surface p-6 md:p-10 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div class="space-y-2">
+              <span class="rounded bg-link px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase text-white">
+                Synergy Matrix
+              </span>
+              <h2 class="text-2xl sm:text-3xl font-semibold tracking-[-0.8px] text-ink">
+                {content.results.overallSynergy}
+              </h2>
+              <p class="text-xs text-body leading-relaxed max-w-xl">
+                Compatibility index calculated across reciprocal roles and shared desires.
+              </p>
+            </div>
+            <div class="text-left md:text-right">
+              <div id="synergy-pct" class="font-mono text-4xl sm:text-5xl font-bold tracking-tight text-ink">0%</div>
+              <div id="synergy-label" class="mt-1 text-xs font-medium text-mute">Calculating...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1. Complementary High Matches -->
+        <div>
+          <div class="mb-4">
+            <h3 class="text-lg font-semibold tracking-tight text-ink">
+              {content.results.complementaryTitle}
+            </h3>
+            <p class="text-xs text-mute mt-1">
+              {content.results.complementaryDesc}
+            </p>
+          </div>
+          <div id="matches-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Injected via client script -->
+          </div>
+        </div>
+
+        <!-- 2. Friction Points -->
+        <div id="frictions-section">
+          <div class="mb-4">
+            <h3 class="text-lg font-semibold tracking-tight text-ink">
+              {content.results.boundaryTitle}
+            </h3>
+            <p class="text-xs text-mute mt-1">
+              {content.results.boundaryDesc}
+            </p>
+          </div>
+          <div id="frictions-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Injected via client script -->
+          </div>
+        </div>
+
+        <!-- 3. Side by Side Table -->
+        <div class="rounded-2xl border border-border bg-surface p-6 overflow-hidden">
+          <h3 class="text-base font-semibold text-ink mb-4">Complete Side-by-Side Dimension Breakdown</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs" id="comparison-table">
+              <thead>
+                <tr class="border-b border-border text-mute font-mono text-[11px] uppercase">
+                  <th class="py-2.5 pr-4">Dimension</th>
+                  <th class="py-2.5 px-4 text-center">Your Score</th>
+                  <th class="py-2.5 px-4 text-center">Partner Score</th>
+                  <th class="py-2.5 pl-4 text-right">Differential</th>
+                </tr>
+              </thead>
+              <tbody id="comparison-table-body" class="divide-y divide-border">
+                <!-- Injected via script -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Share Comparison Link -->
+        <div class="flex justify-center pt-6">
+          <button
+            id="share-comparison-btn"
+            type="button"
+            class="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-6 py-2.5 text-xs font-semibold text-ink hover:bg-surface-raised transition-colors cursor-pointer"
+          >
+            <span>{content.results.shareComparisonBtn}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer lang={lang} />
+</Layout>
+
+<script>
+  import { decodeScores, encodeScores, calculatePartnerCompatibility } from '../../utils/scoring';
+  import type { Dimension } from '../../data/dimensions';
+
+  const page = document.getElementById('compare-page');
+  if (page) {
+    const dimensionsMap: Record<string, Dimension> = JSON.parse(page.getAttribute('data-dimensions') || '{}');
+
+    const inputA = document.getElementById('profile-a-input') as HTMLTextAreaElement;
+    const inputB = document.getElementById('profile-b-input') as HTMLTextAreaElement;
+    const statusA = document.getElementById('profile-a-status');
+    const statusB = document.getElementById('profile-b-status');
+    const compareBtn = document.getElementById('compare-calculate-btn');
+    const loadMyBtn = document.getElementById('load-my-saved-btn');
+    const resultsContainer = document.getElementById('comparison-results');
+    const shareBtn = document.getElementById('share-comparison-btn');
+
+    // Load URL params if passed: ?u=...&p=...
+    const urlParams = new URLSearchParams(window.location.search);
+    const uParam = urlParams.get('u');
+    const pParam = urlParams.get('p');
+
+    if (uParam && inputA) inputA.value = uParam;
+    if (pParam && inputB) inputB.value = pParam;
+
+    function extractCode(raw: string): string {
+      const trimmed = raw.trim();
+      if (trimmed.includes('data=')) {
+        try {
+          const u = new URL(trimmed.startsWith('http') ? trimmed : `https://dummy.com/${trimmed}`);
+          return u.searchParams.get('data') || '';
+        } catch (e) {
+          const match = trimmed.match(/data=([a-zA-Z0-9_-]+)/);
+          return match ? match[1] : '';
+        }
+      }
+      return trimmed;
+    }
+
+    function validateInput(inputEl: HTMLTextAreaElement, statusEl: HTMLElement | null, label: string) {
+      const code = extractCode(inputEl.value);
+      if (!code) {
+        if (statusEl) {
+          statusEl.textContent = `No ${label} profile loaded`;
+          statusEl.className = 'text-[11px] text-mute';
+        }
+        return null;
+      }
+
+      const decoded = decodeScores(code);
+      if (!decoded || Object.keys(decoded).length === 0) {
+        if (statusEl) {
+          statusEl.textContent = `Invalid code format for ${label}`;
+          statusEl.className = 'text-[11px] text-error font-medium';
+        }
+        return null;
+      }
+
+      if (statusEl) {
+        statusEl.textContent = `✓ ${label} profile loaded (${Object.keys(decoded).length} dimensions)`;
+        statusEl.className = 'text-[11px] text-emerald-500 font-medium';
+      }
+      return decoded;
+    }
+
+    if (loadMyBtn && inputA) {
+      loadMyBtn.addEventListener('click', () => {
+        try {
+          const saved = localStorage.getItem('bdsm_latest_results');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed.scores) {
+              const encoded = encodeScores(parsed.scores);
+              inputA.value = `${window.location.origin}/results?data=${encoded}`;
+              validateInput(inputA, statusA, 'Your');
+            }
+          } else {
+            alert('No completed test found in this browser. Take a test first!');
+          }
+        } catch (e) {
+          alert('Could not retrieve local test results.');
+        }
+      });
+    }
+
+    if (compareBtn) {
+      compareBtn.addEventListener('click', () => {
+        const scoresA = validateInput(inputA, statusA, 'Your');
+        const scoresB = validateInput(inputB, statusB, 'Partner');
+
+        if (scoresA && scoresB) {
+          runComparison(scoresA, scoresB);
+        } else {
+          alert('Please provide valid test links or result codes for both profiles.');
+        }
+      });
+    }
+
+    if (uParam && pParam) {
+      setTimeout(() => {
+        const scoresA = validateInput(inputA, statusA, 'Your');
+        const scoresB = validateInput(inputB, statusB, 'Partner');
+        if (scoresA && scoresB) {
+          runComparison(scoresA, scoresB);
+        }
+      }, 100);
+    }
+
+    function runComparison(scoresA: Record<string, number>, scoresB: Record<string, number>) {
+      const comp = calculatePartnerCompatibility(scoresA, scoresB);
+
+      if (resultsContainer) resultsContainer.classList.remove('hidden');
+
+      const synergyPct = document.getElementById('synergy-pct');
+      const synergyLabel = document.getElementById('synergy-label');
+      if (synergyPct) synergyPct.textContent = `${comp.overallSynergy}%`;
+      if (synergyLabel) {
+        if (comp.overallSynergy >= 75) {
+          synergyLabel.textContent = 'High Mutual Synergy';
+          synergyLabel.className = 'mt-1 text-xs font-semibold text-emerald-500';
+        } else if (comp.overallSynergy >= 50) {
+          synergyLabel.textContent = 'Moderate Compatibility';
+          synergyLabel.className = 'mt-1 text-xs font-semibold text-link';
+        } else {
+          synergyLabel.textContent = 'Exploratory Divergence';
+          synergyLabel.className = 'mt-1 text-xs font-semibold text-warning';
+        }
+      }
+
+      const matchesGrid = document.getElementById('matches-grid');
+      if (matchesGrid) {
+        if (comp.matches.length > 0) {
+          matchesGrid.innerHTML = comp.matches.map((m) => {
+            const dimA = dimensionsMap[m.userDimension]?.name || m.userDimension;
+            const dimB = dimensionsMap[m.partnerDimension]?.name || m.partnerDimension;
+            return `
+              <div class="rounded-xl border border-border bg-surface p-5 shadow-xs">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-semibold text-sm text-ink">${dimA} &amp; ${dimB}</span>
+                  <span class="rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2.5 py-0.5 font-mono text-xs font-semibold">
+                    ${m.synergyScore}% Match
+                  </span>
+                </div>
+                <div class="my-3 flex items-center justify-between text-xs bg-surface-raised p-2.5 rounded-lg border border-border">
+                  <div>
+                    <span class="text-mute">You:</span>
+                    <span class="font-medium text-ink ml-1">${dimA} (${m.userScore}%)</span>
+                  </div>
+                  <div class="text-mute">⇄</div>
+                  <div>
+                    <span class="text-mute">Partner:</span>
+                    <span class="font-medium text-ink ml-1">${dimB} (${m.partnerScore}%)</span>
+                  </div>
+                </div>
+                <p class="text-xs leading-relaxed text-body">${m.insight}</p>
+              </div>
+            `;
+          }).join('');
+        } else {
+          matchesGrid.innerHTML = `<p class="col-span-2 text-xs text-mute">No high-intensity complementary matches detected.</p>`;
+        }
+      }
+
+      const frictionsSection = document.getElementById('frictions-section');
+      const frictionsGrid = document.getElementById('frictions-grid');
+      if (frictionsSection && frictionsGrid) {
+        if (comp.potentialFrictions.length > 0) {
+          frictionsSection.classList.remove('hidden');
+          frictionsGrid.innerHTML = comp.potentialFrictions.map((f) => {
+            const dimA = dimensionsMap[f.userDimension]?.name || f.userDimension;
+            const dimB = dimensionsMap[f.partnerDimension]?.name || f.partnerDimension;
+            return `
+              <div class="rounded-xl border border-rose-300 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20 p-5">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-semibold text-sm text-ink">${dimA} / ${dimB}</span>
+                  <span class="rounded-full bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-200 border border-rose-200 dark:border-rose-800 px-2.5 py-0.5 font-mono text-xs font-semibold">
+                    Asymmetry
+                  </span>
+                </div>
+                <div class="my-3 flex items-center justify-between text-xs bg-surface p-2.5 rounded-lg border border-rose-200 dark:border-rose-900/40">
+                  <div>
+                    <span class="text-mute">You:</span>
+                    <span class="font-medium text-ink ml-1">${dimA} (${f.userScore}%)</span>
+                  </div>
+                  <div class="text-mute">≠</div>
+                  <div>
+                    <span class="text-mute">Partner:</span>
+                    <span class="font-medium text-ink ml-1">${dimB} (${f.partnerScore}%)</span>
+                  </div>
+                </div>
+                <p class="text-xs leading-relaxed text-body">${f.insight}</p>
+              </div>
+            `;
+          }).join('');
+        } else {
+          frictionsSection.classList.add('hidden');
+        }
+      }
+
+      const tableBody = document.getElementById('comparison-table-body');
+      if (tableBody) {
+        const dimKeys = Object.keys(dimensionsMap);
+        tableBody.innerHTML = dimKeys.map((k) => {
+          const sA = scoresA[k] ?? 0;
+          const sB = scoresB[k] ?? 0;
+          const diff = Math.abs(sA - sB);
+          const dimObj = dimensionsMap[k];
+          return `
+            <tr class="hover:bg-surface-raised transition-colors">
+              <td class="py-2.5 pr-4 font-medium text-ink">${dimObj?.name || k}</td>
+              <td class="py-2.5 px-4 text-center font-mono">${sA}%</td>
+              <td class="py-2.5 px-4 text-center font-mono">${sB}%</td>
+              <td class="py-2.5 pl-4 text-right font-mono text-mute">±${diff}%</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      window.scrollTo({
+        top: resultsContainer?.offsetTop ? resultsContainer.offsetTop - 80 : 400,
+        behavior: 'smooth'
+      });
+    }
+
+    if (shareBtn) {
+      shareBtn.addEventListener('click', () => {
+        const codeA = extractCode(inputA.value);
+        const codeB = extractCode(inputB.value);
+        const url = new URL(window.location.href);
+        url.searchParams.set('u', codeA);
+        url.searchParams.set('p', codeB);
+        navigator.clipboard.writeText(url.toString()).then(() => {
+          const original = shareBtn.innerHTML;
+          shareBtn.innerHTML = '<span>✓ Comparison Link Copied!</span>';
+          setTimeout(() => {
+            shareBtn.innerHTML = original;
+          }, 2000);
+        });
+      });
+    }
+  }
+</script>

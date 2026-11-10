@@ -1,0 +1,15 @@
+---
+import TermsPage from '../../components/pages/TermsPage.astro';
+import { NON_DEFAULT_LANGUAGES, type SupportedLanguage } from '../../i18n/languages';
+
+export function getStaticPaths() {
+  return NON_DEFAULT_LANGUAGES.map((lang) => ({
+    params: { lang }
+  }));
+}
+
+const { lang } = Astro.params;
+---
+
+<TermsPage lang={lang as SupportedLanguage} />
+

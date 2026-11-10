@@ -1,0 +1,14 @@
+# Robots.txt for BDSM Test (https://bdsmtest.org)
+User-agent: *
+Allow: /
+Allow: /es/
+Allow: /ja/
+Allow: /fr/
+Allow: /de/
+Allow: /pt/
+Allow: /ko/
+Allow: /it/
+
+# Sitemaps
+Sitemap: https://bdsmtest.org/sitemap.xml
+
