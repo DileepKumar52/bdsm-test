@@ -29,7 +29,7 @@ const {
   structuredData,
 } = Astro.props;
 
-const siteUrl = Astro.site ? Astro.site.toString().replace(/\/$/, '') : 'https://bdsmtest.org';
+const siteUrl = Astro.site ? Astro.site.toString().replace(/\/$/, '') : 'https://freebdsmtest.com';
 const currentPath = canonicalPath || Astro.url.pathname;
 const currentLang: SupportedLanguage = lang || getLanguageFromPath(currentPath);
 const langConfig = SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];

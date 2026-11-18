@@ -84,7 +84,7 @@ export interface HreflangLink {
 /**
  * Generates reciprocal hreflang links and x-default for a given path
  */
-export function getHreflangLinks(currentPath: string, siteUrl: string = 'https://bdsmtest.org'): HreflangLink[] {
+export function getHreflangLinks(currentPath: string, siteUrl: string = 'https://freebdsmtest.com'): HreflangLink[] {
   const cleanSiteUrl = siteUrl.replace(/\/$/, '');
   const basePath = getCanonicalPath(currentPath);
 

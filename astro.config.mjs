@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://bdsmtest.org',
+  site: 'https://freebdsmtest.com',
   output: 'static',
   build: {
     format: 'directory',
