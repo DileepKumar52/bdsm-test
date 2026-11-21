@@ -1,9 +1,64 @@
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 128 128">
-    <path d="M50.4 78.5a75.1 75.1 0 0 0-28.5 6.9l24.2-65.7c.7-2 1.9-3.2 3.4-3.2h29c1.5 0 2.7 1.2 3.4 3.2l24.2 65.7s-11.6-7-28.5-7L67 45.5c-.4-1.7-1.6-2.8-2.9-2.8-1.3 0-2.5 1.1-2.9 2.7L50.4 78.5Zm-1.1 28.2Zm-4.2-20.2c-2 6.6-.6 15.8 4.2 20.2a17.5 17.5 0 0 1 .2-.7 5.5 5.5 0 0 1 5.7-4.5c2.8.1 4.3 1.5 4.7 4.7.2 1.1.2 2.3.2 3.5v.4c0 2.7.7 5.2 2.2 7.4a13 13 0 0 0 5.7 4.9v-.3l-.2-.3c-1.8-5.6-.5-9.5 4.4-12.8l1.5-1a73 73 0 0 0 3.2-2.2 16 16 0 0 0 6.8-11.4c.3-2 .1-4-.6-6l-.8.6-1.6 1a37 37 0 0 1-22.4 2.7c-5-.7-9.7-2-13.2-6.2Z" />
-    <style>
-        path { fill: #000; }
-        @media (prefers-color-scheme: dark) {
-            path { fill: #FFF; }
-        }
-    </style>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18181c"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
+    <linearGradient id="glyphGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e4e4e7"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded rectangle with solid contrasting border -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bgGrad)" stroke="#27272a" stroke-width="18" filter="url(#shadow)"/>
+  
+  <!-- Subtle inner perimeter accent -->
+  <rect x="25" y="25" width="462" height="462" rx="103" fill="none" stroke="#3f3f46" stroke-width="2" opacity="0.6"/>
+
+  <!-- Distinctive BT Monogram (Geometric vector paths for 100% font-independent rendering) -->
+  <g fill="url(#glyphGrad)">
+    <!-- Letter B -->
+    <path fill-rule="evenodd" d="
+      M 112,146
+      L 204,146
+      C 236,146 254,162 254,194
+      C 254,216 242,232 224,242
+      C 248,252 262,270 262,298
+      C 262,336 238,366 198,366
+      L 112,366
+      Z
+      M 162,188
+      L 162,234
+      L 196,234
+      C 210,234 218,226 218,211
+      C 218,196 210,188 196,188
+      Z
+      M 162,276
+      L 162,324
+      L 200,324
+      C 216,324 225,314 225,300
+      C 225,286 216,276 200,276
+      Z
+    "/>
+
+    <!-- Letter T -->
+    <path d="
+      M 278,146
+      L 404,146
+      L 404,192
+      L 364,192
+      L 364,366
+      L 318,366
+      L 318,192
+      L 278,192
+      Z
+    "/>
+  </g>
+
+  <!-- Brand Accent Dot (Dynamic Emerald Status Jewel) -->
+  <circle cx="414" cy="112" r="28" fill="#10b981" stroke="#09090b" stroke-width="6"/>
 </svg>

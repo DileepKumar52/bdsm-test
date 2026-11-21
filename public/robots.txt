@@ -9,5 +9,11 @@ Allow: /pt/
 Allow: /ko/
 Allow: /it/
 
+# Googlebot-Image crawler must have unrestricted access to favicons and branding assets
+User-agent: Googlebot-Image
+Allow: /favicon*
+Allow: /apple-touch-icon.png
+Allow: /og-image.svg
+
 # Sitemaps
 Sitemap: https://freebdsmtest.com/sitemap.xml
